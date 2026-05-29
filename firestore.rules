@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Salas — qualquer usuário autenticado pode ler e criar
+    match /rooms/{roomId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid;
+      allow update: if request.auth != null
+        && (
+          // Dono pode fazer tudo
+          resource.data.ownerId == request.auth.uid
+          // Jogadores podem entrar/sair/jogar
+          || request.auth.uid in resource.data.playerIds
+          // Novos jogadores podem entrar se a sala estiver aberta
+          || resource.data.status == 'waiting'
+        );
+      allow delete: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Perfis de usuário
+    match /users/{userId} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
