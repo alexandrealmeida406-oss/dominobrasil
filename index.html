@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Dominó Brasil</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+
+<!-- Firebase SDKs (v10 modular via CDN compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<style>
+/* ════════════════════════════════════════
+   RESET & BASE
+════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Nunito',sans-serif;
+  background:radial-gradient(ellipse at center,#3a2050 0%,#1a0e28 100%);
+  min-height:100vh;color:#fff;overflow:hidden;
+}
+
+/* ════════════════════════════════════════
+   SCREENS
+════════════════════════════════════════ */
+.screen{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .35s;
+}
+.screen.hidden{opacity:0;pointer-events:none;}
+
+/* ════════════════════════════════════════
+   SCREEN: LOGIN
+════════════════════════════════════════ */
+#screen-login{
+  flex-direction:column;gap:32px;
+  background:radial-gradient(ellipse at center,#3a2050 0%,#1a0e28 100%);
+}
+
+.login-logo{
+  text-align:center;
+}
+.login-logo .flag{font-size:3.5rem;line-height:1;}
+.login-logo h1{
+  font-family:'Playfair Display',serif;
+  font-size:2.8rem;font-weight:900;
+  color:#e8b830;
+  letter-spacing:3px;text-transform:uppercase;
+  text-shadow:0 0 40px rgba(232,184,48,.4);
+}
+.login-logo h1 span{color:#fff;opacity:.85;}
+.login-logo p{
+  font-size:.85rem;letter-spacing:2px;
+  color:rgba(255,255,255,.5);margin-top:6px;
+}
+
+/* Domino deco */
+.deco-tiles{display:flex;gap:12px;justify-content:center;margin:8px 0;}
+.deco-tile{
+  width:54px;height:26px;
+  background:linear-gradient(160deg,#f8f2e0,#e8dcc0);
+  border-radius:5px;border:2px solid #c0a870;
+  box-shadow:0 4px 14px rgba(0,0,0,.6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:900;color:#a08040;
+  gap:4px;
+}
+.deco-dot{width:7px;height:7px;border-radius:50%;}
+.dot-r{background:radial-gradient(circle at 35% 30%,#ff7070,#c02020);}
+.dot-g{background:radial-gradient(circle at 35% 30%,#70d070,#208020);}
+.dot-p{background:radial-gradient(circle at 35% 30%,#c070e8,#6010a0);}
+
+.login-box{
+  background:rgba(0,0,0,.45);
+  border:1.5px solid rgba(232,184,48,.25);
+  border-radius:24px;padding:36px 44px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  min-width:320px;
+  box-shadow:0 20px 60px rgba(0,0,0,.7);
+}
+.login-box p{
+  font-size:.9rem;color:rgba(255,255,255,.6);text-align:center;
+}
+
+.btn-google{
+  display:flex;align-items:center;gap:12px;
+  background:#fff;color:#1a1a1a;
+  border:none;border-radius:30px;
+  padding:13px 28px;font-size:1rem;font-weight:800;
+  cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.4);
+  transition:all .2s;width:100%;justify-content:center;
+  letter-spacing:.3px;
+}
+.btn-google:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.5);}
+.btn-google:active{transform:scale(.97);}
+.btn-google svg{width:22px;height:22px;flex-shrink:0;}
+
+.login-footer{
+  font-size:.7rem;color:rgba(255,255,255,.3);
+  text-align:center;letter-spacing:.5px;
+}
+
+/* ════════════════════════════════════════
+   SCREEN: LOBBY
+════════════════════════════════════════ */
+#screen-lobby{
+  flex-direction:column;align-items:center;
+  background:radial-gradient(ellipse at center,#3a2050 0%,#1a0e28 100%);
+  padding:16px;overflow-y:auto;
+}
+
+.lobby-header{
+  width:100%;max-width:700px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 4px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  margin-bottom:14px;
+}
+.lobby-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.6rem;color:#e8b830;letter-spacing:2px;
+}
+.lobby-title span{color:#fff;opacity:.8;}
+
+.user-pill{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:30px;padding:6px 14px 6px 6px;
+}
+.user-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#5080d0,#3060a0);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;overflow:hidden;
+}
+.user-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.user-name{font-size:.8rem;font-weight:700;color:#fff;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-logout{
+  background:none;border:none;color:rgba(255,255,255,.4);
+  font-size:.75rem;cursor:pointer;margin-left:4px;
+  transition:color .15s;
+}
+.btn-logout:hover{color:#e87878;}
+
+.lobby-actions{
+  width:100%;max-width:700px;
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;
+}
+.lobby-actions h2{font-size:1rem;font-weight:800;color:rgba(255,255,255,.7);letter-spacing:1px;}
+
+.btn-create{
+  background:linear-gradient(135deg,#c07010,#e8b030);
+  color:#1a0800;font-family:'Nunito',sans-serif;
+  font-size:.85rem;font-weight:900;
+  border:none;border-radius:20px;padding:10px 22px;
+  cursor:pointer;letter-spacing:.5px;text-transform:uppercase;
+  box-shadow:0 4px 16px rgba(232,176,48,.3);
+  transition:all .2s;
+}
+.btn-create:hover{transform:scale(1.04);}
+
+/* Rooms list */
+.rooms-list{
+  width:100%;max-width:700px;
+  display:flex;flex-direction:column;gap:10px;
+  max-height:calc(100vh - 200px);overflow-y:auto;
+  padding-right:4px;
+}
+.rooms-list::-webkit-scrollbar{width:3px;}
+.rooms-list::-webkit-scrollbar-thumb{background:rgba(232,184,48,.3);border-radius:2px;}
+
+.room-card{
+  background:rgba(0,0,0,.4);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:14px 18px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:all .2s;
+}
+.room-card:hover{
+  border-color:rgba(232,184,48,.4);
+  background:rgba(0,0,0,.55);
+  transform:translateX(4px);
+}
+.room-card.mine{border-color:rgba(232,184,48,.3);}
+
+.room-icon{
+  width:46px;height:46px;border-radius:12px;
+  background:linear-gradient(135deg,#2a6040,#1a4028);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;flex-shrink:0;
+  box-shadow:0 4px 10px rgba(0,0,0,.4);
+}
+.room-info{flex:1;}
+.room-name{font-size:.95rem;font-weight:800;color:#fff;}
+.room-sub{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px;}
+
+.room-status{
+  display:flex;flex-direction:column;align-items:flex-end;gap:4px;
+}
+.seats-badge{
+  font-size:.72rem;font-weight:700;
+  background:rgba(255,255,255,.08);
+  border-radius:20px;padding:3px 10px;color:#fff;
+}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  display:inline-block;margin-right:4px;
+}
+.status-dot.waiting{background:#e8b830;animation:blink 1.5s ease-in-out infinite;}
+.status-dot.full{background:#e87878;}
+@keyframes blink{0%,100%{opacity:.4;}50%{opacity:1;}}
+
+.rooms-empty{
+  text-align:center;padding:48px 20px;
+  color:rgba(255,255,255,.3);font-size:.9rem;line-height:1.8;
+}
+.rooms-empty .big{font-size:2.5rem;margin-bottom:8px;}
+
+/* ════════════════════════════════════════
+   SCREEN: WAITING ROOM
+════════════════════════════════════════ */
+#screen-waiting{
+  flex-direction:column;align-items:center;
+  background:radial-gradient(ellipse at center,#1a3a50 0%,#0e1e28 100%);
+  padding:20px;
+}
+
+.waiting-header{
+  width:100%;max-width:540px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+}
+.waiting-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.4rem;color:#e8b830;
+}
+.btn-back{
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);
+  border:1px solid rgba(255,255,255,.12);border-radius:20px;
+  padding:7px 16px;font-size:.78rem;font-weight:700;
+  cursor:pointer;transition:all .18s;
+}
+.btn-back:hover{background:rgba(255,255,255,.15);color:#fff;}
+
+.room-id-box{
+  background:rgba(0,0,0,.35);border:1px solid rgba(232,184,48,.2);
+  border-radius:12px;padding:10px 20px;
+  text-align:center;margin-bottom:20px;width:100%;max-width:540px;
+}
+.room-id-box p{font-size:.68rem;color:rgba(255,255,255,.4);letter-spacing:1.5px;text-transform:uppercase;}
+.room-id-box .code{font-size:1.6rem;font-weight:900;color:#e8b830;letter-spacing:6px;font-family:monospace;}
+
+/* Seats grid */
+.seats-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;width:100%;max-width:540px;margin-bottom:20px;
+}
+.seat{
+  background:rgba(0,0,0,.35);
+  border:2px dashed rgba(255,255,255,.15);
+  border-radius:16px;padding:16px;
+  display:flex;align-items:center;gap:12px;
+  min-height:72px;transition:border-color .3s;
+}
+.seat.filled{border-style:solid;border-color:rgba(232,184,48,.3);}
+.seat.owner-seat{border-color:rgba(232,184,48,.5);}
+.seat-avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,#5080d0,#3060a0);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;overflow:hidden;
+}
+.seat-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.seat-info .seat-name{font-size:.85rem;font-weight:800;color:#fff;}
+.seat-info .seat-label{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:1px;}
+.seat-empty-icon{font-size:1.4rem;opacity:.3;}
+.seat-empty-text{font-size:.75rem;color:rgba(255,255,255,.3);}
+
+.waiting-status{
+  font-size:.82rem;color:rgba(255,255,255,.5);
+  text-align:center;margin-bottom:16px;
+  min-height:20px;
+}
+
+.btn-start{
+  background:linear-gradient(135deg,#208040,#30b060);
+  color:#fff;font-family:'Nunito',sans-serif;
+  font-size:1rem;font-weight:900;
+  border:none;border-radius:30px;padding:14px 44px;
+  cursor:pointer;letter-spacing:1px;text-transform:uppercase;
+  box-shadow:0 6px 24px rgba(48,176,96,.35);
+  transition:all .2s;width:100%;max-width:540px;
+}
+.btn-start:hover{transform:scale(1.03);box-shadow:0 10px 32px rgba(48,176,96,.45);}
+.btn-start:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* ════════════════════════════════════════
+   SCREEN: GAME
+════════════════════════════════════════ */
+#screen-game{
+  flex-direction:column;align-items:center;justify-content:flex-start;
+  background:radial-gradient(ellipse at center,#2a1540 0%,#150a20 100%);
+}
+
+/* ── TOP BAR ── */
+#top-bar{
+  width:100%;display:flex;
+  justify-content:space-around;align-items:flex-start;
+  padding:8px 10px 0;
+  position:absolute;top:0;left:0;z-index:10;
+}
+
+/* ── TABLE ── */
+#table-wrap{
+  position:absolute;top:82px;left:50%;
+  transform:translateX(-50%);
+  width:calc(100% - 16px);max-width:880px;
+  height:calc(100% - 170px);
+}
+#table-rim{
+  position:absolute;inset:0;
+  background:linear-gradient(160deg,#a06030 0%,#7a4a28 40%,#5a3218 100%);
+  border-radius:50% / 44%;
+  box-shadow:0 8px 40px rgba(0,0,0,.7),inset 0 2px 6px rgba(255,200,100,.12),inset 0 -2px 6px rgba(0,0,0,.4);
+}
+#felt{
+  position:absolute;inset:16px 22px;
+  background:radial-gradient(ellipse at 50% 40%,#2f8f4c 0%,#2a7a42 50%,#1e6032 100%);
+  border-radius:50% / 42%;overflow:hidden;
+}
+#felt::before{
+  content:'';position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Ccircle cx='1' cy='1' r='.6' fill='rgba(0,0,0,0.06)'/%3E%3Ccircle cx='4' cy='4' r='.6' fill='rgba(0,0,0,0.06)'/%3E%3C/svg%3E");
+  border-radius:inherit;
+}
+
+/* Brand name on felt */
+#felt-brand{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-family:'Playfair Display',serif;
+  font-size:1.1rem;font-weight:700;
+  color:rgba(255,255,255,.07);
+  letter-spacing:6px;text-transform:uppercase;
+  white-space:nowrap;pointer-events:none;
+  z-index:1;user-select:none;
+}
+
+/* ── BOARD ── */
+#board-area{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  display:flex;align-items:center;
+  gap:4px;flex-wrap:wrap;justify-content:center;
+  max-width:88%;max-height:68%;
+  z-index:3;
+}
+.board-ph{
+  color:rgba(255,255,255,.15);
+  font-size:.85rem;font-weight:700;
+  letter-spacing:2px;text-align:center;
+}
+
+/* ── BONEYARD ── */
+#boneyard{
+  position:absolute;top:14px;left:18px;
+  z-index:4;display:flex;flex-direction:column;
+  align-items:center;gap:2px;cursor:pointer;
+}
+#boneyard .bone-stack{width:52px;height:60px;position:relative;}
+#boneyard .bone-card{
+  position:absolute;width:46px;height:28px;
+  background:linear-gradient(160deg,#b0a070,#887050);
+  border-radius:6px;border:1.5px solid #705030;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  transition:transform .15s;
+}
+#boneyard:hover .bone-card{filter:brightness(1.15);}
+#boneyard .bone-card:nth-child(1){top:0;left:3px;transform:rotate(-8deg);}
+#boneyard .bone-card:nth-child(2){top:8px;left:0;transform:rotate(-2deg);}
+#boneyard .bone-card:nth-child(3){top:16px;left:2px;transform:rotate(5deg);}
+#boneyard .bone-label{font-size:.6rem;font-weight:800;color:rgba(255,255,255,.6);letter-spacing:1px;}
+#boneyard .bone-count{font-size:1rem;font-weight:900;color:#fff;}
+
+/* ── STATUS ── */
+#status-wrap{
+  position:absolute;top:72px;left:50%;transform:translateX(-50%);
+  z-index:10;
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:20px;padding:5px 18px;
+  font-size:.75rem;font-weight:700;color:#fff;
+  white-space:nowrap;text-align:center;max-width:340px;
+}
+
+/* ── PLAYER INFO (bottom-left) ── */
+#player-info{position:absolute;bottom:68px;left:8px;z-index:10;}
+.score-display{
+  text-align:center;margin-top:4px;
+  font-size:.7rem;color:rgba(255,255,255,.5);
+}
+.score-display span{color:#e8b830;font-weight:900;}
+
+/* ── ACTION BUTTONS (bottom-right) ── */
+#action-btns{
+  position:absolute;bottom:14px;right:8px;
+  z-index:10;display:flex;flex-direction:column;gap:6px;
+}
+.act-btn{
+  font-family:'Nunito',sans-serif;
+  font-size:.72rem;font-weight:800;
+  letter-spacing:.5px;text-transform:uppercase;
+  border:none;border-radius:20px;
+  padding:8px 14px;cursor:pointer;
+  transition:all .18s;min-width:82px;
+  box-shadow:0 3px 10px rgba(0,0,0,.4);
+}
+.act-btn:hover{transform:scale(1.06);}
+.act-btn:active{transform:scale(.95);}
+.act-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+.act-draw{background:linear-gradient(135deg,#e89020,#f0b040);color:#2a1000;}
+.act-pass{background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.18);}
+.act-leave{background:rgba(0,0,0,.4);color:#e87878;border:1.5px solid rgba(232,120,120,.25);}
+
+/* ── BOTTOM BAR ── */
+#bottom-bar{
+  position:absolute;bottom:0;left:0;width:100%;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:6px;z-index:10;
+}
+#player-hand{display:flex;gap:6px;padding:4px 8px;align-items:flex-end;}
+
+/* ════════════════════════════════════════
+   AVATAR CARDS (used in game top bar)
+════════════════════════════════════════ */
+.avatar-card{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.avatar-wrap{position:relative;}
+.avatar-circle{
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(145deg,#6090d0,#3060a0);
+  border:3px solid #fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;
+  box-shadow:0 4px 12px rgba(0,0,0,.5);overflow:hidden;
+}
+.avatar-circle.sm{width:44px;height:44px;font-size:1.1rem;}
+.avatar-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.piece-badge{
+  position:absolute;bottom:-4px;right:-4px;
+  background:#7a4a28;color:#f0d090;
+  font-size:.6rem;font-weight:900;
+  width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #f0d090;box-shadow:0 2px 4px rgba(0,0,0,.4);
+}
+.piece-badge.sm{width:16px;height:16px;font-size:.5rem;}
+.name-tag{
+  background:rgba(0,0,0,.55);
+  border-radius:8px;padding:3px 10px;
+  text-align:center;min-width:88px;
+  border:1px solid rgba(255,255,255,.1);
+}
+.name-tag .team-lbl{font-size:.55rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.name-tag.ta .team-lbl{color:#e87878;}
+.name-tag.tb .team-lbl{color:#78a0e8;}
+.name-tag .pname{font-size:.72rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:86px;}
+.opp-hand{display:flex;gap:3px;margin-top:3px;}
+.opp-back{
+  width:16px;height:26px;
+  background:linear-gradient(160deg,#b0a070,#887050);
+  border-radius:3px;border:1.5px solid #705030;
+  box-shadow:1px 2px 4px rgba(0,0,0,.5);
+}
+.turn-ring{
+  position:absolute;inset:-5px;border-radius:50%;
+  border:3px solid #e8b830;
+  box-shadow:0 0 14px #e8b830;
+  animation:pulse 1.2s ease-in-out infinite;
+  display:none;
+}
+@keyframes pulse{0%,100%{opacity:.55;transform:scale(1);}50%{opacity:1;transform:scale(1.06);}}
+
+/* ════════════════════════════════════════
+   DOMINO TILES
+════════════════════════════════════════ */
+.tile{
+  position:relative;
+  background:linear-gradient(160deg,#f8f2e0 0%,#ede5c8 60%,#ddd0a8 100%);
+  border-radius:9px;border:2px solid #c0a870;
+  box-shadow:0 6px 18px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(0,0,0,.1);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;
+  animation:tileIn .2s ease both;
+}
+@keyframes tileIn{from{opacity:0;transform:scale(.6) translateY(14px);}to{opacity:1;transform:none;}}
+
+.tile.h{width:88px;height:46px;flex-direction:row;}
+.tile.v{width:46px;height:88px;flex-direction:column;}
+.tile.ph{width:72px;height:136px;flex-direction:column;}
+
+.tile.ph:hover{
+  transform:translateY(-14px) scale(1.06);
+  box-shadow:0 20px 36px rgba(0,0,0,.65),0 0 0 2.5px rgba(232,184,48,.6),inset 0 1px 0 rgba(255,255,255,.85);
+}
+.tile.ph.selected{
+  transform:translateY(-20px) scale(1.09);
+  box-shadow:0 26px 44px rgba(0,0,0,.7),0 0 0 3px #e8b830,0 0 28px rgba(232,184,48,.55),inset 0 1px 0 rgba(255,255,255,.85);
+}
+.tile.ph.unplayable{opacity:.38;filter:grayscale(50%);cursor:not-allowed;}
+.tile.ph.unplayable:hover{transform:none !important;box-shadow:0 6px 18px rgba(0,0,0,.55);}
+.tile.board-t{cursor:default;animation-delay:0s !important;}
+.tile.board-t:hover{transform:none;box-shadow:0 6px 18px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.8);}
+
+.div-h{width:2px;height:72%;background:linear-gradient(180deg,transparent,#a08040,transparent);flex-shrink:0;}
+.div-v{height:2px;width:72%;background:linear-gradient(90deg,transparent,#a08040,transparent);flex-shrink:0;}
+.half{flex:1;display:flex;align-items:center;justify-content:center;}
+
+.pip-wrap{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);align-items:center;justify-items:center;}
+.tile.h .pip-wrap,.tile.v .pip-wrap{width:30px;height:30px;}
+.tile.ph .pip-wrap{width:42px;height:42px;}
+
+.pip{border-radius:50%;box-shadow:inset 0 1px 2px rgba(0,0,0,.4);}
+.tile.h .pip,.tile.v .pip{width:7px;height:7px;}
+.tile.ph .pip{width:10px;height:10px;}
+.pip.x{visibility:hidden;}
+.pip.c1,.pip.c2{background:radial-gradient(circle at 35% 30%,#ff7070,#c02020);}
+.pip.c3,.pip.c4{background:radial-gradient(circle at 35% 30%,#70d070,#208020);}
+.pip.c5,.pip.c6{background:radial-gradient(circle at 35% 30%,#c070e8,#6010a0);}
+.pip.c0{background:radial-gradient(circle at 35% 30%,#ccc,#777);}
+
+/* ── CHOOSE SIDE ── */
+.choose-btn{
+  display:inline-block;padding:2px 10px;border-radius:20px;
+  border:1.5px solid #e8b830;color:#e8b830;
+  background:rgba(232,184,48,.1);
+  cursor:pointer;font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:800;
+  transition:background .15s;margin:0 3px;
+}
+.choose-btn:hover{background:rgba(232,184,48,.28);}
+
+/* ════════════════════════════════════════
+   MODAL (end round)
+════════════════════════════════════════ */
+#modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.78);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;z-index:300;
+}
+#modal.show{display:flex;}
+#modal-box{
+  background:linear-gradient(160deg,#2a1a3a,#1a0e28);
+  border:2px solid rgba(232,184,48,.4);
+  border-radius:26px;padding:38px 50px;
+  text-align:center;max-width:340px;width:90%;
+  box-shadow:0 20px 80px rgba(0,0,0,.9);
+  animation:popIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{opacity:0;transform:scale(.75) translateY(24px);}to{opacity:1;transform:none;}}
+#modal-box h2{font-size:2rem;color:#e8b830;margin-bottom:10px;}
+#modal-box p{font-size:1rem;color:#fff;opacity:.85;margin-bottom:24px;line-height:1.55;white-space:pre-line;}
+.btn-again{
+  background:linear-gradient(135deg,#c07010,#e8b030);color:#1a0800;
+  font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:900;
+  border:none;border-radius:30px;padding:12px 36px;cursor:pointer;
+  letter-spacing:1px;text-transform:uppercase;transition:all .2s;
+  box-shadow:0 4px 20px rgba(232,176,48,.35);
+}
+.btn-again:hover{transform:scale(1.06);}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .tile.ph{width:54px;height:104px;}
+  .tile.ph .pip-wrap{width:34px;height:34px;}
+  .tile.ph .pip{width:8px;height:8px;}
+  .tile.h{width:70px;height:38px;}
+  .tile.v{width:38px;height:70px;}
+  .tile.h .pip-wrap,.tile.v .pip-wrap{width:24px;height:24px;}
+  .tile.h .pip,.tile.v .pip{width:6px;height:6px;}
+  .avatar-circle{width:42px;height:42px;font-size:1.1rem;}
+  .avatar-circle.sm{width:34px;height:34px;font-size:.9rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════  SCREEN: LOGIN  ══════════════ -->
+<div class="screen" id="screen-login">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:28px;">
+    <div class="login-logo">
+      <div class="flag">🇧🇷</div>
+      <h1>Dominó <span>Brasil</span></h1>
+      <p>dominobrasil.com.br</p>
+    </div>
+
+    <div class="deco-tiles">
+      <div class="deco-tile">
+        <div class="deco-dot dot-r"></div><div class="deco-dot dot-r"></div>
+        <div style="width:1.5px;height:16px;background:#c0a870;"></div>
+        <div class="deco-dot dot-g"></div><div class="deco-dot dot-g"></div><div class="deco-dot dot-g"></div>
+      </div>
+      <div class="deco-tile">
+        <div class="deco-dot dot-p"></div>
+        <div style="width:1.5px;height:16px;background:#c0a870;"></div>
+        <div class="deco-dot dot-p"></div><div class="deco-dot dot-p"></div>
+      </div>
+    </div>
+
+    <div class="login-box">
+      <p>Entre com sua conta Google<br>para jogar com amigos!</p>
+      <button class="btn-google" onclick="loginGoogle()">
+        <!-- Google G logo -->
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Entrar com Google
+      </button>
+      <p style="font-size:.72rem;color:rgba(255,255,255,.3);">Grátis · Sem anúncios · Jogue já</p>
+    </div>
+    <div class="login-footer">© 2025 Dominó Brasil · Todos os direitos reservados</div>
+  </div>
+</div>
+
+<!-- ══════════════  SCREEN: LOBBY  ══════════════ -->
+<div class="screen hidden" id="screen-lobby">
+  <div style="width:100%;max-width:700px;display:flex;flex-direction:column;align-items:center;padding:16px;">
+
+    <div class="lobby-header">
+      <div class="lobby-title">🇧🇷 Dominó <span>Brasil</span></div>
+      <div class="user-pill">
+        <div class="user-avatar" id="lobby-avatar">😎</div>
+        <span class="user-name" id="lobby-name">Jogador</span>
+        <button class="btn-logout" onclick="logout()">Sair</button>
+      </div>
+    </div>
+
+    <div class="lobby-actions">
+      <h2>🎮 SALAS ABERTAS</h2>
+      <button class="btn-create" onclick="createRoom()">+ Criar Sala</button>
+    </div>
+
+    <div class="rooms-list" id="rooms-list">
+      <div class="rooms-empty">
+        <div class="big">🁫</div>
+        Nenhuma sala aberta no momento.<br>
+        Crie uma sala e convide seus amigos!
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════  SCREEN: WAITING ROOM  ══════════════ -->
+<div class="screen hidden" id="screen-waiting">
+  <div style="width:100%;max-width:540px;display:flex;flex-direction:column;align-items:center;">
+
+    <div class="waiting-header">
+      <div class="waiting-title">🎯 Sala de Espera</div>
+      <button class="btn-back" onclick="leaveRoom()">← Sair da Sala</button>
+    </div>
+
+    <div class="room-id-box">
+      <p>Código da Sala</p>
+      <div class="code" id="room-code">----</div>
+      <p style="margin-top:4px;font-size:.65rem;color:rgba(255,255,255,.35);">Compartilhe com seus amigos!</p>
+    </div>
+
+    <div class="seats-grid" id="seats-grid">
+      <!-- filled dynamically -->
+    </div>
+
+    <div class="waiting-status" id="waiting-status">Aguardando jogadores…</div>
+
+    <button class="btn-start" id="btn-start-game" onclick="startGame()" disabled>
+      ⚡ Iniciar o Jogo
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════  SCREEN: GAME  ══════════════ -->
+<div class="screen hidden" id="screen-game">
+
+  <!-- Top opponents -->
+  <div id="top-bar">
+    <div class="avatar-card" id="opp-left-card">
+      <div class="avatar-wrap">
+        <div class="avatar-circle sm" id="av-left">🧑</div>
+        <div class="piece-badge sm" id="opp-left-cnt">7</div>
+      </div>
+      <div class="name-tag tb">
+        <div class="team-lbl">Equipe B</div>
+        <div class="pname" id="opp-left-name">—</div>
+      </div>
+      <div class="opp-hand" id="opp-left-hand"></div>
+    </div>
+
+    <div class="avatar-card" id="opp-center-card">
+      <div class="avatar-wrap">
+        <div class="avatar-circle" id="av-center">🧔</div>
+        <div class="piece-badge" id="opp-center-cnt">7</div>
+      </div>
+      <div class="name-tag ta">
+        <div class="team-lbl">Equipe A</div>
+        <div class="pname" id="opp-center-name">IA</div>
+      </div>
+      <div class="opp-hand" id="opp-center-hand"></div>
+    </div>
+
+    <div class="avatar-card" id="opp-right-card">
+      <div class="avatar-wrap">
+        <div class="avatar-circle sm" id="av-right">👩</div>
+        <div class="piece-badge sm" id="opp-right-cnt">6</div>
+      </div>
+      <div class="name-tag tb">
+        <div class="team-lbl">Equipe B</div>
+        <div class="pname" id="opp-right-name">—</div>
+      </div>
+      <div class="opp-hand" id="opp-right-hand"></div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div id="status-wrap">Carregando…</div>
+
+  <!-- Table -->
+  <div id="table-wrap">
+    <div id="table-rim"></div>
+    <div id="felt">
+      <div id="felt-brand">Dominó Brasil</div>
+
+      <!-- Boneyard -->
+      <div id="boneyard" onclick="playerDraw()" title="Comprar peça">
+        <div class="bone-stack">
+          <div class="bone-card"></div>
+          <div class="bone-card"></div>
+          <div class="bone-card"></div>
+        </div>
+        <div class="bone-label">BONEYARD</div>
+        <div class="bone-count" id="bone-count">0</div>
+      </div>
+
+      <!-- Board -->
+      <div id="board-area">
+        <div class="board-ph">— Jogue a primeira peça —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player info + score (bottom-left) -->
+  <div id="player-info">
+    <div class="avatar-card">
+      <div class="avatar-wrap">
+        <div class="avatar-circle" id="av-me">😎</div>
+        <div class="turn-ring" id="turn-ring"></div>
+      </div>
+      <div class="name-tag ta">
+        <div class="team-lbl">Equipe A</div>
+        <div class="pname" id="my-name-game">Você</div>
+      </div>
+    </div>
+    <div class="score-display">Você: <span id="p-score">0</span> · IA: <span id="ai-score">0</span></div>
+  </div>
+
+  <!-- Action buttons -->
+  <div id="action-btns">
+    <button class="act-btn act-draw" id="btn-draw" onclick="playerDraw()">🂠 Comprar</button>
+    <button class="act-btn act-pass" id="btn-pass" onclick="playerPass()">↷ Passar</button>
+    <button class="act-btn act-leave" onclick="leaveGame()">✕ Sair</button>
+  </div>
+
+  <!-- Player hand -->
+  <div id="bottom-bar">
+    <div id="player-hand"></div>
+  </div>
+
+</div>
+
+<!-- ══════════════  END ROUND MODAL  ══════════════ -->
+<div id="modal">
+  <div id="modal-box">
+    <h2 id="modal-title"></h2>
+    <p  id="modal-msg"></p>
+    <button class="btn-again" onclick="newRound()">Jogar Novamente</button>
+  </div>
+</div>
+
+<!-- ══════════════  FIREBASE + GAME LOGIC  ══════════════ -->
+<script>
+/* ═══════════════════════════════════════════════════════
+   FIREBASE CONFIG
+   ⚠️  Substitua com os valores do seu projeto Firebase!
+═══════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey:            "COLE_SUA_API_KEY_AQUI",
+  authDomain:        "dominobrasil.firebaseapp.com",
+  projectId:         "dominobrasil",
+  storageBucket:     "dominobrasil.appspot.com",
+  messagingSenderId: "COLE_SEU_SENDER_ID",
+  appId:             "COLE_SEU_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let currentUser = null;
+let currentRoomId = null;
+let roomUnsubscribe = null;
+let roomsUnsubscribe = null;
+let isOwner = false;
+
+// Game state (local)
+let boneyard=[], playerHand=[], aiHand=[], chain=[];
+let leftEnd=null, rightEnd=null;
+let playerTurn=true, selected=null, gameOver=false;
+let pScore=0, aiScore=0;
+
+/* ═══════════════════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('screen-' + id).classList.remove('hidden');
+}
+
+/* ═══════════════════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════════════════ */
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  if (user) {
+    // Save/update user profile
+    db.collection('users').doc(user.uid).set({
+      name:  user.displayName,
+      photo: user.photoURL,
+      email: user.email,
+      lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    // Update lobby UI
+    const nameEl  = document.getElementById('lobby-name');
+    const avatarEl = document.getElementById('lobby-avatar');
+    if (nameEl)  nameEl.textContent = user.displayName || 'Jogador';
+    if (avatarEl) {
+      if (user.photoURL) avatarEl.innerHTML = `<img src="${user.photoURL}" alt="">`;
+      else avatarEl.textContent = (user.displayName||'?')[0].toUpperCase();
+    }
+
+    showScreen('lobby');
+    listenRooms();
+  } else {
+    showScreen('login');
+    if (roomsUnsubscribe) { roomsUnsubscribe(); roomsUnsubscribe = null; }
+  }
+});
+
+function loginGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(err => {
+    alert('Erro ao entrar: ' + err.message);
+  });
+}
+
+function logout() {
+  if (currentRoomId) leaveRoom();
+  auth.signOut();
+}
+
+/* ═══════════════════════════════════════════════════════
+   LOBBY — LISTEN ROOMS
+═══════════════════════════════════════════════════════ */
+function listenRooms() {
+  if (roomsUnsubscribe) roomsUnsubscribe();
+  roomsUnsubscribe = db.collection('rooms')
+    .where('status', '==', 'waiting')
+    .orderBy('createdAt', 'desc')
+    .limit(20)
+    .onSnapshot(snap => {
+      renderRooms(snap.docs);
+    }, err => console.error('rooms listen:', err));
+}
+
+function renderRooms(docs) {
+  const list = document.getElementById('rooms-list');
+  if (!docs.length) {
+    list.innerHTML = `<div class="rooms-empty"><div class="big">🁫</div>Nenhuma sala aberta.<br>Crie uma e convide seus amigos!</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  docs.forEach(doc => {
+    const r = doc.data();
+    const isMine = r.ownerId === currentUser?.uid;
+    const seats  = r.players ? Object.keys(r.players).length : 0;
+    const full   = seats >= r.maxPlayers;
+    if (full && !isMine) return;
+
+    const card = document.createElement('div');
+    card.className = 'room-card' + (isMine ? ' mine' : '');
+    card.innerHTML = `
+      <div class="room-icon">🁫</div>
+      <div class="room-info">
+        <div class="room-name">${r.ownerName || 'Sala'}'s Room ${isMine ? '⭐' : ''}</div>
+        <div class="room-sub">${r.maxPlayers} jogadores · ${r.mode || 'Draw Game'}</div>
+      </div>
+      <div class="room-status">
+        <div class="seats-badge">${seats}/${r.maxPlayers} 🪑</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,.45);">
+          <span class="status-dot ${full?'full':'waiting'}"></span>${full?'Cheia':'Aguardando'}
+        </div>
+      </div>`;
+    card.onclick = () => joinRoom(doc.id);
+    list.appendChild(card);
+  });
+  if (!list.children.length)
+    list.innerHTML = `<div class="rooms-empty"><div class="big">🁫</div>Nenhuma sala disponível.<br>Crie uma nova!</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CREATE ROOM
+═══════════════════════════════════════════════════════ */
+async function createRoom() {
+  if (!currentUser) return;
+  const ref = db.collection('rooms').doc();
+  const roomData = {
+    ownerId:    currentUser.uid,
+    ownerName:  currentUser.displayName || 'Jogador',
+    status:     'waiting',
+    maxPlayers: 4,
+    mode:       'Draw Game',
+    createdAt:  firebase.firestore.FieldValue.serverTimestamp(),
+    players: {
+      [currentUser.uid]: {
+        name:  currentUser.displayName || 'Jogador',
+        photo: currentUser.photoURL || '',
+        ready: false,
+        seat:  0
+      }
+    },
+    playerIds: [currentUser.uid],
+    gameState: null
+  };
+  await ref.set(roomData);
+  currentRoomId = ref.id;
+  isOwner = true;
+  enterWaitingRoom(ref.id);
+}
+
+/* ═══════════════════════════════════════════════════════
+   JOIN ROOM
+═══════════════════════════════════════════════════════ */
+async function joinRoom(roomId) {
+  if (!currentUser) return;
+  const ref  = db.collection('rooms').doc(roomId);
+  const snap = await ref.get();
+  if (!snap.exists) { alert('Sala não encontrada!'); return; }
+  const r = snap.data();
+  if (r.status !== 'waiting') { alert('Esta sala já começou!'); return; }
+  const seats = Object.keys(r.players || {}).length;
+  if (seats >= r.maxPlayers) { alert('Sala cheia!'); return; }
+
+  const seatIndex = seats;
+  await ref.update({
+    [`players.${currentUser.uid}`]: {
+      name:  currentUser.displayName || 'Jogador',
+      photo: currentUser.photoURL || '',
+      ready: false,
+      seat:  seatIndex
+    },
+    playerIds: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+  });
+
+  currentRoomId = roomId;
+  isOwner = r.ownerId === currentUser.uid;
+  enterWaitingRoom(roomId);
+}
+
+/* ═══════════════════════════════════════════════════════
+   WAITING ROOM
+═══════════════════════════════════════════════════════ */
+function enterWaitingRoom(roomId) {
+  if (roomsUnsubscribe) { roomsUnsubscribe(); roomsUnsubscribe = null; }
+  showScreen('waiting');
+  document.getElementById('room-code').textContent = roomId.slice(0, 6).toUpperCase();
+
+  if (roomUnsubscribe) roomUnsubscribe();
+  roomUnsubscribe = db.collection('rooms').doc(roomId).onSnapshot(snap => {
+    if (!snap.exists) { leaveRoom(); return; }
+    const r = snap.data();
+    renderSeats(r);
+
+    // If game started, enter game
+    if (r.status === 'playing' && r.gameState) {
+      enterGameFromFirestore(r.gameState, r.players);
+    }
+  });
+}
+
+function renderSeats(roomData) {
+  const grid    = document.getElementById('seats-grid');
+  const statusEl = document.getElementById('waiting-status');
+  const btnStart = document.getElementById('btn-start-game');
+  const max      = roomData.maxPlayers || 4;
+  const players  = roomData.players || {};
+  const pList    = Object.entries(players).sort((a,b) => a[1].seat - b[1].seat);
+  const count    = pList.length;
+
+  grid.innerHTML = '';
+  for (let i = 0; i < max; i++) {
+    const seat   = document.createElement('div');
+    const pEntry = pList[i];
+    seat.className = 'seat' + (pEntry ? ' filled' : '') + (pEntry && pEntry[0] === roomData.ownerId ? ' owner-seat' : '');
+    if (pEntry) {
+      const [uid, p] = pEntry;
+      const isOwnerSeat = uid === roomData.ownerId;
+      seat.innerHTML = `
+        <div class="seat-avatar">${p.photo ? `<img src="${p.photo}" alt="">` : '😎'}</div>
+        <div class="seat-info">
+          <div class="seat-name">${p.name}${isOwnerSeat ? ' 👑' : ''}</div>
+          <div class="seat-label">${isOwnerSeat ? 'Dono da sala' : 'Assento '+(i+1)}</div>
+        </div>`;
+    } else {
+      seat.innerHTML = `<div class="seat-empty-icon">🪑</div><div class="seat-empty-text">Aguardando...</div>`;
+    }
+    grid.appendChild(seat);
+  }
+
+  statusEl.textContent = `${count}/${max} jogadores · ${max - count > 0 ? `Aguardando mais ${max-count}...` : 'Mesa completa!'}`;
+
+  // Only owner sees start button enabled
+  const canStart = isOwner && count >= 2;
+  btnStart.disabled = !canStart;
+  btnStart.style.display = isOwner ? 'block' : 'none';
+  if (!isOwner) {
+    const info = document.createElement('div');
+    info.style.cssText = 'text-align:center;font-size:.8rem;color:rgba(255,255,255,.4);';
+    info.textContent = 'Aguardando o dono iniciar o jogo…';
+    // Only add if not already there
+    if (!document.getElementById('waiting-info')) {
+      info.id = 'waiting-info';
+      btnStart.parentNode.insertBefore(info, btnStart);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   START GAME (owner only)
+═══════════════════════════════════════════════════════ */
+async function startGame() {
+  if (!isOwner || !currentRoomId) return;
+  const ref  = db.collection('rooms').doc(currentRoomId);
+  const snap = await ref.get();
+  const r    = snap.data();
+  const playerList = Object.entries(r.players).sort((a,b)=>a[1].seat-b[1].seat);
+
+  // Deal tiles
+  const all = shuffleArr(makeDominos());
+  const hands = {};
+  let idx = 0;
+  playerList.forEach(([uid]) => {
+    hands[uid] = all.slice(idx, idx+7);
+    idx += 7;
+  });
+  const byard = all.slice(idx);
+
+  const gameState = {
+    chain:      [],
+    leftEnd:    null,
+    rightEnd:   null,
+    boneyard:   byard,
+    hands,
+    turnOrder:  playerList.map(([uid])=>uid),
+    turnIndex:  0,
+    scores:     Object.fromEntries(playerList.map(([uid])=>[uid,0])),
+    round:      1
+  };
+
+  await ref.update({ status: 'playing', gameState });
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENTER GAME FROM FIRESTORE
+═══════════════════════════════════════════════════════ */
+function enterGameFromFirestore(gs, players) {
+  if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
+  showScreen('game');
+
+  // Map to local state
+  boneyard   = gs.boneyard || [];
+  playerHand = gs.hands?.[currentUser?.uid] || [];
+  // Use first non-me player as "AI" for display
+  const others = (gs.turnOrder || []).filter(u => u !== currentUser?.uid);
+  aiHand = gs.hands?.[others[0]] || [];
+
+  chain     = gs.chain || [];
+  leftEnd   = gs.leftEnd;
+  rightEnd  = gs.rightEnd;
+  const myTurn = gs.turnOrder?.[gs.turnIndex] === currentUser?.uid;
+  playerTurn = myTurn;
+  selected   = null;
+  gameOver   = false;
+  pScore     = gs.scores?.[currentUser?.uid] || 0;
+  aiScore    = gs.scores?.[others[0]] || 0;
+
+  const myData = players?.[currentUser?.uid];
+  if (myData?.photo) document.getElementById('av-me').innerHTML = `<img src="${myData.photo}" alt="">`;
+  document.getElementById('my-name-game').textContent = myData?.name || 'Você';
+
+  const aiData = players?.[others[0]];
+  document.getElementById('opp-center-name').textContent = aiData?.name || 'Oponente';
+
+  setStatus(myTurn ? 'Sua vez! Toque uma peça.' : 'Aguardando oponente…');
+  render();
+
+  // Continue listening for remote moves
+  roomUnsubscribe = db.collection('rooms').doc(currentRoomId).onSnapshot(snap => {
+    if (!snap.exists) return;
+    const data = snap.data();
+    if (data.status === 'finished') return;
+    const rgs = data.gameState;
+    if (!rgs) return;
+    // Sync state
+    boneyard   = rgs.boneyard || [];
+    playerHand = rgs.hands?.[currentUser?.uid] || [];
+    aiHand     = rgs.hands?.[others[0]] || [];
+    chain      = rgs.chain || [];
+    leftEnd    = rgs.leftEnd;
+    rightEnd   = rgs.rightEnd;
+    const isMy = rgs.turnOrder?.[rgs.turnIndex] === currentUser?.uid;
+    playerTurn = isMy;
+    pScore     = rgs.scores?.[currentUser?.uid] || 0;
+    aiScore    = rgs.scores?.[others[0]] || 0;
+    setStatus(isMy ? 'Sua vez!' : `Vez de ${players?.[rgs.turnOrder?.[rgs.turnIndex]]?.name || 'oponente'}…`);
+    render();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   LEAVE ROOM / GAME
+═══════════════════════════════════════════════════════ */
+async function leaveRoom() {
+  if (!currentRoomId || !currentUser) return;
+  const ref = db.collection('rooms').doc(currentRoomId);
+  try {
+    await ref.update({
+      [`players.${currentUser.uid}`]: firebase.firestore.FieldValue.delete(),
+      playerIds: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
+    });
+    // If owner leaves, delete room
+    if (isOwner) await ref.delete();
+  } catch(e) {}
+  currentRoomId = null; isOwner = false;
+  if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
+  showScreen('lobby');
+  listenRooms();
+}
+
+function leaveGame() { leaveRoom(); }
+
+/* ═══════════════════════════════════════════════════════
+   LOCAL GAME (solo vs IA, when only 1 player in room OR demo)
+   Falls back to this if multiplayer not connected
+═══════════════════════════════════════════════════════ */
+function makeDominos(){const t=[];for(let i=0;i<=6;i++)for(let j=i;j<=6;j++)t.push([i,j]);return t;}
+function shuffleArr(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+function initLocalGame(){
+  const all=shuffleArr(makeDominos());
+  playerHand=all.slice(0,7);
+  aiHand=all.slice(7,14);
+  boneyard=all.slice(14);
+  chain=[];leftEnd=null;rightEnd=null;
+  playerTurn=true;selected=null;gameOver=false;
+}
+
+function newRound(){
+  document.getElementById('modal').classList.remove('show');
+  initLocalGame();
+  render();
+  setStatus('Sua vez! Toque uma peça para jogar.');
+}
+
+/* ═══════════════════════════════════════════════════════
+   GAME RULES
+═══════════════════════════════════════════════════════ */
+function canPlay(t){return chain.length===0||t[0]===leftEnd||t[1]===leftEnd||t[0]===rightEnd||t[1]===rightEnd;}
+function anyCanPlay(h){return h.some(canPlay);}
+
+function place(tile,side){
+  if(chain.length===0){chain.push({tile,flip:false});leftEnd=tile[0];rightEnd=tile[1];return;}
+  if(side==='left'){const f=tile[1]===leftEnd;chain.unshift({tile,flip:!f});leftEnd=f?tile[0]:tile[1];}
+  else{const f=tile[0]!==rightEnd;chain.push({tile,flip:f});rightEnd=f?tile[0]:tile[1];}
+}
+
+function playerSelectTile(idx){
+  if(!playerTurn||gameOver)return;
+  if(selected===idx){selected=null;render();return;}
+  const tile=playerHand[idx];
+  if(!canPlay(tile)){setStatus('Essa peça não encaixa. Escolha outra ou compre.');return;}
+  selected=idx;render();
+  if(chain.length===0){commit(idx,'right');return;}
+  const cL=tile[0]===leftEnd||tile[1]===leftEnd;
+  const cR=tile[0]===rightEnd||tile[1]===rightEnd;
+  if(cL&&cR&&leftEnd!==rightEnd){
+    setStatus(`Onde colocar? <span class="choose-btn" onclick="commit(${idx},'left')">↩ Esquerda</span> <span class="choose-btn" onclick="commit(${idx},'right')">↪ Direita</span>`);
+  } else {commit(idx,cL?'left':'right');}
+}
+
+function commit(idx,side){
+  const tile=playerHand.splice(idx,1)[0];place(tile,side);
+  selected=null;
+  if(!checkWin()){render();setTimeout(aiTurn,800);}
+}
+
+function playerDraw(){
+  if(!playerTurn||gameOver)return;
+  if(!boneyard.length){setStatus('Boneyard vazio!');return;}
+  const t=boneyard.pop();playerHand.push(t);
+  setStatus(`Comprou [${t[0]}·${t[1]}]. ${anyCanPlay(playerHand)?'Pode jogar!':'Sem jogadas — passe.'}`);
+  selected=null;render();
+}
+
+function playerPass(){
+  if(!playerTurn||gameOver)return;
+  if(boneyard.length){setStatus('Compre antes de passar!');return;}
+  if(anyCanPlay(playerHand)){setStatus('Você tem peças que encaixam!');return;}
+  setStatus('Você passou. Vez da IA…');
+  playerTurn=false;render();setTimeout(aiTurn,700);
+}
+
+function aiTurn(){
+  if(gameOver)return;
+  playerTurn=false;render();
+  for(let i=0;i<aiHand.length;i++){
+    const tile=aiHand[i];
+    if(canPlay(tile)){
+      aiHand.splice(i,1);
+      if(chain.length===0){place(tile,'right');}
+      else{const cL=tile[0]===leftEnd||tile[1]===leftEnd;const cR=tile[0]===rightEnd||tile[1]===rightEnd;place(tile,(cL&&!cR)?'left':'right');}
+      setStatus(`IA jogou [${tile[0]}·${tile[1]}]. Sua vez!`);
+      if(!checkWin()){playerTurn=true;render();}
+      return;
+    }
+  }
+  if(boneyard.length){const t=boneyard.pop();aiHand.push(t);setStatus('IA comprou…');setTimeout(aiTurn,650);return;}
+  setStatus('IA passou. Sua vez!');playerTurn=true;render();
+  if(!anyCanPlay(playerHand))endRound(null);
+}
+
+function sumHand(h){return h.reduce((s,t)=>s+t[0]+t[1],0);}
+function checkWin(){
+  if(!playerHand.length){endRound('player');return true;}
+  if(!aiHand.length){endRound('ai');return true;}
+  return false;
+}
+function endRound(w){
+  gameOver=true;render();
+  let title,msg;
+  if(w==='player'){const p=sumHand(aiHand);pScore+=p;title='🏆 Você venceu!';msg=`IA tinha ${p} pts.\nSeu placar: ${pScore}`;}
+  else if(w==='ai'){const p=sumHand(playerHand);aiScore+=p;title='🤖 IA venceu!';msg=`Você tinha ${p} pts.\nPlacar IA: ${aiScore}`;}
+  else{const pP=sumHand(playerHand),aP=sumHand(aiHand);if(pP<aP){pScore+=aP;title='🏆 Você venceu!';msg=`Sua mão: ${pP} | IA: ${aP}`;}else if(aP<pP){aiScore+=pP;title='🤖 IA venceu!';msg=`Sua mão: ${pP} | IA: ${aP}`;}else{title='🤝 Empate!';msg=`Ambos: ${pP} pts`;}}
+  document.getElementById('p-score').textContent=pScore;
+  document.getElementById('ai-score').textContent=aiScore;
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-msg').textContent=msg;
+  document.getElementById('modal').classList.add('show');
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════ */
+function setStatus(h){const el=document.getElementById('status-wrap');if(el)el.innerHTML=h;}
+
+const PIPS={0:[],1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[0,2],[2,0],[2,2]],5:[[0,0],[0,2],[1,1],[2,0],[2,2]],6:[[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]]};
+
+function makePips(n){
+  const w=document.createElement('div');w.className='pip-wrap';
+  for(let r=0;r<3;r++)for(let c=0;c<3;c++){
+    const d=document.createElement('div');
+    d.className='pip '+(PIPS[n].some(([pr,pc])=>pr===r&&pc===c)?'c'+n:'x');
+    w.appendChild(d);
+  }
+  return w;
+}
+
+function makeTile(a,b,cls,handler){
+  const el=document.createElement('div');el.className='tile '+cls;
+  if(handler)el.onclick=handler;
+  const isV=cls.includes('v')||cls.includes('ph');
+  const h1=document.createElement('div');h1.className='half';h1.appendChild(makePips(a));
+  const dv=document.createElement('div');dv.className=isV?'div-v':'div-h';
+  const h2=document.createElement('div');h2.className='half';h2.appendChild(makePips(b));
+  el.appendChild(h1);el.appendChild(dv);el.appendChild(h2);
+  return el;
+}
+
+function render(){
+  // AI count
+  const ac=aiHand.length;
+  document.getElementById('opp-center-cnt').textContent=ac;
+  const oph=document.getElementById('opp-center-hand');oph.innerHTML='';
+  for(let i=0;i<Math.min(ac,7);i++){const d=document.createElement('div');d.className='opp-back';oph.appendChild(d);}
+  // Side placeholders
+  ['left','right'].forEach(s=>{
+    const h=document.getElementById('opp-'+s+'-hand');h.innerHTML='';
+    for(let i=0;i<4;i++){const d=document.createElement('div');d.className='opp-back';h.appendChild(d);}
+  });
+  // Turn ring
+  const ring=document.getElementById('turn-ring');
+  if(ring)ring.style.display=playerTurn&&!gameOver?'block':'none';
+  // Boneyard
+  document.getElementById('bone-count').textContent=boneyard.length;
+  // Board
+  const board=document.getElementById('board-area');board.innerHTML='';
+  if(!chain.length){const ph=document.createElement('div');ph.className='board-ph';ph.textContent='— Jogue a primeira peça —';board.appendChild(ph);}
+  else{const useV=chain.length>10;chain.forEach(({tile,flip})=>{const[a,b]=flip?[tile[1],tile[0]]:[tile[0],tile[1]];const el=makeTile(a,b,(useV?'v':'h')+' board-t',null);board.appendChild(el);});}
+  // Player hand
+  const handEl=document.getElementById('player-hand');handEl.innerHTML='';
+  playerHand.forEach((tile,i)=>{
+    const ok=canPlay(tile),sel=selected===i;
+    const cls='ph'+(sel?' selected':'')+((!ok&&chain.length>0)?' unplayable':'');
+    const el=makeTile(tile[0],tile[1],cls,()=>playerSelectTile(i));
+    el.style.animationDelay=(i*.04)+'s';
+    handEl.appendChild(el);
+  });
+  // Scores
+  document.getElementById('p-score').textContent=pScore;
+  document.getElementById('ai-score').textContent=aiScore;
+  // Buttons
+  const nd=!playerTurn||gameOver;
+  document.getElementById('btn-draw').disabled=nd||!boneyard.length;
+  document.getElementById('btn-pass').disabled=nd;
+}
+
+/* ─── Demo mode: start local game when entering game screen directly ─── */
+// (Fallback for testing without Firebase rooms)
+window.startLocalDemo = function(){
+  initLocalGame();
+  showScreen('game');
+  render();
+  setStatus('Sua vez! Toque uma peça para jogar.');
+};
+</script>
+</body>
+</html>
