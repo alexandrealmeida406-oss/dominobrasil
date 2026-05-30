@@ -679,7 +679,8 @@ button{font-family:'Nunito',sans-serif;}
       <div class="lob-user">
         <div class="lob-avatar" id="lob-av">😎</div>
         <span class="lob-name" id="lob-name">Jogador</span>
-        <button class="btn-sm admin" id="btn-admin" style="display:none" onclick="showScreen('admin');loadAdmin()">⚙️</button>
+        <button class="btn-sm" onclick="showScreen('settings')" title="Configurações">⚙️</button>
+        <button class="btn-sm admin" id="btn-admin" style="display:none" onclick="showScreen('admin');loadAdmin()">🛡️</button>
         <button class="btn-sm danger" onclick="logout()">Sair</button>
       </div>
     </div>
@@ -715,92 +716,6 @@ button{font-family:'Nunito',sans-serif;}
       <div class="rtype-arr">›</div>
     </div>
     <button class="btn-sm" style="width:100%;margin-top:10px;padding:10px;" onclick="closeModal('modal-create')">Cancelar</button>
-  </div>
-</div>
-
-<!-- ══ MODAL: ESCOLHER PEDRA ══ -->
-<div class="modal-overlay" id="modal-customize">
-  <div class="modal-box">
-    <div class="modal-title">Escolha as Pedras</div>
-    <div class="modal-sub">Selecione o estilo para a partida</div>
-
-    <!-- Opção 1: Madeira -->
-    <div class="tile-pick sel" id="pick-0" onclick="selectTileStyle(0)">
-      <div class="tile-pick-preview">
-        <!-- Mini domino madeira -->
-        <div class="mprev t-wood pc-white">
-          <div class="half"><div class="pip-wrap">
-            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
-            <div class="pip x"></div><div class="pip c3"></div><div class="pip x"></div>
-            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
-          </div></div>
-          <div class="div-h"></div>
-          <div class="half"><div class="pip-wrap">
-            <div class="pip c4"></div><div class="pip x"></div><div class="pip c4"></div>
-            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
-            <div class="pip c4"></div><div class="pip x"></div><div class="pip c4"></div>
-          </div></div>
-        </div>
-      </div>
-      <div class="tile-pick-info">
-        <div class="tile-pick-name">🪵 Madeira</div>
-        <div class="tile-pick-desc">Pontos brancos sobre madeira</div>
-      </div>
-      <div class="tile-pick-check">✓</div>
-    </div>
-
-    <!-- Opção 2: Ébano -->
-    <div class="tile-pick" id="pick-1" onclick="selectTileStyle(1)">
-      <div class="tile-pick-preview">
-        <div class="mprev t-ebony pc-white">
-          <div class="half"><div class="pip-wrap">
-            <div class="pip c1"></div><div class="pip x"></div><div class="pip c1"></div>
-            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
-            <div class="pip c1"></div><div class="pip x"></div><div class="pip c1"></div>
-          </div></div>
-          <div class="div-h"></div>
-          <div class="half"><div class="pip-wrap">
-            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
-            <div class="pip x"></div><div class="pip c2"></div><div class="pip x"></div>
-            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
-          </div></div>
-        </div>
-      </div>
-      <div class="tile-pick-info">
-        <div class="tile-pick-name">🖤 Ébano</div>
-        <div class="tile-pick-desc">Pontos brancos sobre preto</div>
-      </div>
-      <div class="tile-pick-check">✓</div>
-    </div>
-
-    <!-- Opção 3: Marfim -->
-    <div class="tile-pick" id="pick-2" onclick="selectTileStyle(2)">
-      <div class="tile-pick-preview">
-        <div class="mprev t-ivory pc-classic">
-          <div class="half"><div class="pip-wrap">
-            <div class="pip c5"></div><div class="pip x"></div><div class="pip c5"></div>
-            <div class="pip x"></div><div class="pip c5"></div><div class="pip x"></div>
-            <div class="pip c5"></div><div class="pip x"></div><div class="pip c5"></div>
-          </div></div>
-          <div class="div-h"></div>
-          <div class="half"><div class="pip-wrap">
-            <div class="pip c6"></div><div class="pip x"></div><div class="pip c6"></div>
-            <div class="pip c6"></div><div class="pip x"></div><div class="pip c6"></div>
-            <div class="pip c6"></div><div class="pip x"></div><div class="pip c6"></div>
-          </div></div>
-        </div>
-      </div>
-      <div class="tile-pick-info">
-        <div class="tile-pick-name">🦷 Marfim</div>
-        <div class="tile-pick-desc">Pontos clássicos sobre marfim</div>
-      </div>
-      <div class="tile-pick-check">✓</div>
-    </div>
-
-    <div style="display:flex;gap:8px;margin-top:16px;">
-      <button class="btn-sm" style="flex:1;padding:10px;" onclick="closeModal('modal-customize');showModal('modal-create')">← Voltar</button>
-      <button class="btn-start" style="flex:2;" onclick="confirmCreate()">Criar Sala ›</button>
-    </div>
   </div>
 </div>
 
@@ -888,6 +803,97 @@ button{font-family:'Nunito',sans-serif;}
   </div>
 </div>
 
+<!-- ══ SETTINGS ══ -->
+<div class="screen hidden" id="screen-settings">
+  <div class="admin-wrap">
+    <div class="lob-header">
+      <div class="lob-logo">⚙️ Configurações</div>
+      <button class="btn-sm" onclick="showScreen('lobby')">← Voltar</button>
+    </div>
+    <div class="admin-content">
+
+      <div style="margin-bottom:24px;">
+        <div style="font-size:.65rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px;">Estilo das Suas Pedras</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:14px;">Escolha como suas pedras aparecem para você durante o jogo.</div>
+
+        <div class="tile-pick sel" id="spick-0" onclick="selectMyStyle(0)">
+          <div class="tile-pick-preview">
+            <div class="mprev t-ivory pc-classic">
+              <div class="half"><div class="pip-wrap">
+                <div class="pip c5"></div><div class="pip x"></div><div class="pip c5"></div>
+                <div class="pip x"></div><div class="pip c5"></div><div class="pip x"></div>
+                <div class="pip c5"></div><div class="pip x"></div><div class="pip c5"></div>
+              </div></div>
+              <div class="div-h"></div>
+              <div class="half"><div class="pip-wrap">
+                <div class="pip c6"></div><div class="pip x"></div><div class="pip c6"></div>
+                <div class="pip c6"></div><div class="pip x"></div><div class="pip c6"></div>
+                <div class="pip c6"></div><div class="pip x"></div><div class="pip c6"></div>
+              </div></div>
+            </div>
+          </div>
+          <div class="tile-pick-info">
+            <div class="tile-pick-name">🦷 Marfim Clássico</div>
+            <div class="tile-pick-desc">Pontos pretos sobre marfim · Padrão</div>
+          </div>
+          <div class="tile-pick-check">✓</div>
+        </div>
+
+        <div class="tile-pick" id="spick-1" onclick="selectMyStyle(1)">
+          <div class="tile-pick-preview">
+            <div class="mprev t-wood pc-white">
+              <div class="half"><div class="pip-wrap">
+                <div class="pip c3"></div><div class="pip x"></div><div class="pip c3"></div>
+                <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+                <div class="pip c3"></div><div class="pip x"></div><div class="pip c3"></div>
+              </div></div>
+              <div class="div-h"></div>
+              <div class="half"><div class="pip-wrap">
+                <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+                <div class="pip x"></div><div class="pip c4"></div><div class="pip x"></div>
+                <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+              </div></div>
+            </div>
+          </div>
+          <div class="tile-pick-info">
+            <div class="tile-pick-name">🪵 Madeira</div>
+            <div class="tile-pick-desc">Pontos brancos sobre madeira</div>
+          </div>
+          <div class="tile-pick-check">✓</div>
+        </div>
+
+        <div class="tile-pick" id="spick-2" onclick="selectMyStyle(2)">
+          <div class="tile-pick-preview">
+            <div class="mprev t-ebony pc-white">
+              <div class="half"><div class="pip-wrap">
+                <div class="pip c1"></div><div class="pip x"></div><div class="pip c1"></div>
+                <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+                <div class="pip c1"></div><div class="pip x"></div><div class="pip c1"></div>
+              </div></div>
+              <div class="div-h"></div>
+              <div class="half"><div class="pip-wrap">
+                <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+                <div class="pip x"></div><div class="pip c2"></div><div class="pip x"></div>
+                <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+              </div></div>
+            </div>
+          </div>
+          <div class="tile-pick-info">
+            <div class="tile-pick-name">🖤 Ébano</div>
+            <div class="tile-pick-desc">Pontos brancos sobre preto</div>
+          </div>
+          <div class="tile-pick-check">✓</div>
+        </div>
+
+      </div>
+
+      <div style="font-size:.65rem;color:rgba(255,255,255,.2);text-align:center;padding:8px 0;">
+        Sua preferência é salva automaticamente no seu perfil.
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ ADMIN ══ -->
 <div class="screen hidden" id="screen-admin">
   <div class="admin-wrap">
@@ -924,7 +930,7 @@ let leftEnd=null, rightEnd=null;
 let playerTurn=true, selected=null, gameOver=false;
 let pScore=0, oppScore=0, opponents=[];
 // Style
-let tileStyle=Object.assign({},{theme:'wood',pip:'dots',color:'white',felt:'green'});
+let tileStyle=Object.assign({},{theme:'ivory',pip:'dots',color:'classic',felt:'green'});
 let pendingMode={ players:2, type:'real' };
 
 /* ══════════════════════════════════════════
@@ -968,6 +974,7 @@ async function onLoggedIn(){
   const {data:adm}=await sb.from('admins').select('user_id').eq('user_id',currentUser.id).single();
   isAdmin=!!adm;
   document.getElementById('btn-admin').style.display=isAdmin?'inline':'none';
+  loadMyStyle();
   showScreen('lobby');
   listenRooms();
 }
@@ -1032,7 +1039,49 @@ function showCreateModal(){ closeModal('modal-customize'); showModal('modal-crea
 function openCustomize(players, type){
   pendingMode={ players, type };
   closeModal('modal-create');
-  showModal('modal-customize');
+  confirmCreate();
+}
+
+// ── MY TILE STYLE (per-user preference, saved in localStorage) ──
+const MY_PRESETS=[
+  {theme:'ivory', pip:'dots', color:'classic', felt:'green'}, // Marfim clássico (default)
+  {theme:'wood',  pip:'dots', color:'white',   felt:'green'}, // Madeira branco
+  {theme:'ebony', pip:'dots', color:'white',   felt:'green'}, // Ébano branco
+];
+let myStyleIdx=0;
+
+function loadMyStyle(){
+  const saved=localStorage.getItem('domino_style_idx');
+  myStyleIdx=saved!==null?parseInt(saved):0;
+  tileStyle=Object.assign({},MY_PRESETS[myStyleIdx]||MY_PRESETS[0]);
+  // Sync settings screen checkmarks if open
+  syncSettingsUI();
+}
+
+function syncSettingsUI(){
+  for(let i=0;i<MY_PRESETS.length;i++){
+    const el=document.getElementById('spick-'+i);
+    if(el) el.classList.toggle('sel',i===myStyleIdx);
+  }
+}
+
+function selectMyStyle(idx){
+  myStyleIdx=idx;
+  tileStyle=Object.assign({},MY_PRESETS[idx]);
+  localStorage.setItem('domino_style_idx',idx);
+  syncSettingsUI();
+  // Show confirmation
+  showStyleToast();
+}
+
+function showStyleToast(){
+  let t=document.getElementById('style-toast');
+  if(!t){ t=document.createElement('div'); t.id='style-toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(232,184,48,.15);border:1px solid rgba(232,184,48,.4);color:#e8b830;border-radius:20px;padding:8px 20px;font-size:.8rem;font-weight:800;z-index:999;transition:opacity .3s;';
+    document.body.appendChild(t);
+  }
+  t.textContent='✓ Estilo salvo!'; t.style.opacity='1';
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.style.opacity='0',2000);
 }
 
 // 3 preset tile styles
