@@ -156,25 +156,36 @@ img{display:block;}
 /* TABLE — pointer-events:none so it doesn't block UI clicks */
 #table-wrap{
   position:absolute;
-  top:80px;left:50%;transform:translateX(-50%);
-  width:calc(100% - 8px);max-width:920px;
-  height:calc(100% - 158px);
-  pointer-events:none; /* TABLE ITSELF DOESN'T RECEIVE CLICKS */
+  top:78px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 4px);max-width:980px;
+  height:calc(100% - 152px);
+  pointer-events:none;
   z-index:1;
 }
-/* Rim — decorative only */
+/* Outer shadow ring */
+#table-wrap::before{
+  content:'';
+  position:absolute;inset:-6px;
+  border-radius:50%/46%;
+  background:linear-gradient(180deg,#3a1a08 0%,#200e04 100%);
+  box-shadow:0 12px 50px rgba(0,0,0,.85), 0 4px 12px rgba(0,0,0,.6);
+  z-index:0;
+}
+/* Rim — wide wooden border like the reference */
 #table-rim{
   position:absolute;inset:0;
   border-radius:50%/44%;
-  background:linear-gradient(160deg,#a06030,#7a4828,#5a3218);
-  box-shadow:0 8px 40px rgba(0,0,0,.8),inset 0 0 60px rgba(0,0,0,.3);
+  background:linear-gradient(160deg,#c07838 0%,#8a4e22 35%,#5c3210 65%,#7a4420 100%);
+  box-shadow:inset 0 4px 12px rgba(255,180,80,.15), inset 0 -4px 12px rgba(0,0,0,.4);
+  z-index:1;
 }
-/* Felt — slightly larger inset for bigger green area */
+/* Felt — big green area, flat uniform color like reference */
 #felt{
   position:absolute;
-  inset:12px 16px; /* smaller inset = bigger felt area */
+  inset:18px 22px;
   border-radius:50%/42%;
-  background:radial-gradient(ellipse at 50% 40%,#2e8a4a 0%,#1e6030 55%,#123820 100%);
+  background:#2d7a3a;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.25);
 }
 /* Felt texture — pointer-events:none so clicks pass through */
 #felt::before{
@@ -204,21 +215,7 @@ img{display:block;}
 #board{display:flex;align-items:center;gap:2px;padding:4px 8px;min-width:max-content;}
 .board-ph{color:rgba(255,255,255,.12);font-size:.75rem;font-weight:700;letter-spacing:2px;white-space:nowrap;}
 
-/* Boneyard — inside table-wrap which has pointer-events:none, so must re-enable */
-#boneyard{
-  position:absolute;top:14px;left:18px;z-index:5;
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  cursor:pointer;
-  pointer-events:auto; /* re-enable since parent is none */
-}
-#boneyard .bone-stack{width:48px;height:54px;position:relative;}
-#boneyard .bone-card{position:absolute;width:42px;height:24px;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,.6);transition:filter .2s;}
-#boneyard:hover .bone-card{filter:brightness(1.3);}
-#boneyard .bone-card:nth-child(1){top:0;left:3px;transform:rotate(-8deg);}
-#boneyard .bone-card:nth-child(2){top:7px;left:0;transform:rotate(-2deg);}
-#boneyard .bone-card:nth-child(3){top:14px;left:2px;transform:rotate(5deg);}
-#boneyard .bone-lbl{font-size:.55rem;font-weight:800;color:rgba(212,160,23,.45);letter-spacing:1px;text-transform:uppercase;}
-#boneyard .bone-cnt{font-size:.88rem;font-weight:900;color:var(--gold);}
+
 
 /* Status bar */
 #status-bar{
@@ -287,93 +284,104 @@ img{display:block;}
 @keyframes pring{0%,100%{opacity:.5;transform:scale(1);}50%{opacity:1;transform:scale(1.07);}}
 
 /* ═══════════════════════════════════
-   DOMINO TILES — clean professional
+   DOMINO TILES — reference style
+   Cream/beige body, black classic pips
 ═══════════════════════════════════ */
 .tile{
   position:relative;
-  border-radius:8px;
+  border-radius:7px;
   display:flex;
   align-items:stretch;
   cursor:pointer;
   flex-shrink:0;
   transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .15s;
   animation:tileIn .18s ease both;
-  border:2px solid;
-  /* NO overflow:hidden — it clips pips */
 }
-@keyframes tileIn{from{opacity:0;transform:scale(.7) translateY(8px);}to{opacity:1;transform:none;}}
+@keyframes tileIn{from{opacity:0;transform:scale(.75) translateY(8px);}to{opacity:1;transform:none;}}
 
-/* Board tile sizes */
-.tile.h{width:86px;height:44px;flex-direction:row;}
-.tile.d{width:44px;height:86px;flex-direction:column;}
-/* Hand tile */
-.tile.ph{width:64px;height:124px;flex-direction:column;}
+/* Board tile sizes — match reference proportions */
+.tile.h{width:92px;height:48px;flex-direction:row;}
+.tile.d{width:48px;height:92px;flex-direction:column;}
+/* Hand tile — taller for vertical display */
+.tile.ph{width:68px;height:132px;flex-direction:column;}
 
 /* Hand tile interactions */
-.tile.ph:hover{transform:translateY(-10px) scale(1.04);z-index:5;}
-.tile.ph.selected{transform:translateY(-15px) scale(1.07);z-index:6;}
-.tile.ph.selected::after{content:'';position:absolute;inset:-3px;border-radius:10px;border:2.5px solid var(--gold);box-shadow:0 0 18px rgba(212,160,23,.4);pointer-events:none;}
-.tile.ph.unplayable{opacity:.28;filter:grayscale(70%);cursor:not-allowed;}
+.tile.ph:hover{transform:translateY(-12px) scale(1.05);z-index:5;}
+.tile.ph.selected{transform:translateY(-18px) scale(1.08);z-index:6;}
+.tile.ph.selected::after{content:'';position:absolute;inset:-3px;border-radius:10px;border:2.5px solid var(--gold);box-shadow:0 0 18px rgba(212,160,23,.5);pointer-events:none;}
+.tile.ph.unplayable{opacity:.3;filter:grayscale(60%);cursor:not-allowed;}
 .tile.ph.unplayable:hover{transform:none !important;}
 .tile.board-t{cursor:default;}
 .tile.board-t:hover{transform:none;}
 
 /* Tile halves */
-.half{flex:1;display:flex;align-items:center;justify-content:center;padding:3px;}
+.half{flex:1;display:flex;align-items:center;justify-content:center;}
 
-/* Dividers */
-.div-h{width:1.5px;align-self:stretch;margin:3px 0;opacity:.35;flex-shrink:0;}
-.div-v{height:1.5px;align-self:stretch;margin:0 3px;opacity:.35;flex-shrink:0;}
+/* Dividers — thin dark line like reference */
+.div-h{width:1px;align-self:stretch;margin:5px 0;background:#8a7050;flex-shrink:0;}
+.div-v{height:1px;align-self:stretch;margin:0 5px;background:#8a7050;flex-shrink:0;}
 
-/* Pip grid — fixed pixel size avoids layout issues */
+/* Pip grid */
 .pip-wrap{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   grid-template-rows:repeat(3,1fr);
   place-items:center;
 }
-/* Board tiles */
-.tile.h .pip-wrap,.tile.d .pip-wrap{width:28px;height:28px;}
-/* Hand tiles */
-.tile.ph .pip-wrap{width:40px;height:40px;}
+.tile.h .pip-wrap,.tile.d .pip-wrap{width:32px;height:32px;}
+.tile.ph .pip-wrap{width:46px;height:46px;}
 
-/* Pips */
+/* Pips — classic round black dots */
 .pip{border-radius:50%;display:block;}
-.tile.h .pip,.tile.d .pip{width:6px;height:6px;}
-.tile.ph .pip{width:9px;height:9px;}
+.tile.h .pip,.tile.d .pip{width:7px;height:7px;}
+.tile.ph .pip{width:10px;height:10px;}
 .pip.x{visibility:hidden;}
 
 /* ── TILE THEMES ── */
-/* IVORY */
+/* IVORY — cream/beige like reference */
 .t-ivory{
-  background:linear-gradient(160deg,#fefaf0 0%,#f2e8d0 55%,#e6d8b0 100%);
-  border-color:#c8b470;
-  box-shadow:0 5px 14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(0,0,0,.1);
+  background:#f0e8d0;
+  border:2px solid #b8a870;
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.55),
+    2px 2px 0 rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -1px 0 rgba(0,0,0,.08);
 }
-.t-ivory .div-h,.t-ivory .div-v{background:#a89050;}
-/* EBONY */
+.t-ivory .div-h,.t-ivory .div-v{background:#8a7050;}
+
+/* EBONY — dark like the gold tiles in reference */
 .t-ebony{
-  background:linear-gradient(160deg,#2e2e2e 0%,#1c1c1c 55%,#0e0e0e 100%);
-  border-color:#484848;
-  box-shadow:0 5px 14px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.1),inset 0 -1px 0 rgba(0,0,0,.5);
+  background:linear-gradient(160deg,#2a2a2a,#141414);
+  border:2px solid #3a3a3a;
+  box-shadow:0 6px 16px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.08);
 }
-.t-ebony .div-h,.t-ebony .div-v{background:#606060;}
+.t-ebony .div-h,.t-ebony .div-v{background:#555;}
+
 /* WOOD */
 .t-wood{
-  background:linear-gradient(160deg,#d49858 0%,#b07838 55%,#8c5c22 100%);
-  border-color:#7a5020;
-  box-shadow:0 5px 14px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,200,100,.35),inset 0 -1px 0 rgba(0,0,0,.3);
+  background:linear-gradient(160deg,#d09050,#a07030);
+  border:2px solid #6a4018;
+  box-shadow:0 6px 16px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,200,80,.3);
 }
 .t-wood .div-h,.t-wood .div-v{background:rgba(0,0,0,.4);}
 
 /* ── PIP COLORS ── */
-.pc-classic .pip{background:radial-gradient(circle at 35% 30%,#3a2a14,#1a0e00);}
-.pc-white .pip{background:radial-gradient(circle at 35% 30%,#ffffff,#d8d8d8);box-shadow:inset 0 1px 1px rgba(0,0,0,.2);}
+/* Classic: deep black/brown dots like reference */
+.pc-classic .pip{
+  background:radial-gradient(circle at 35% 28%,#2a1a08,#0a0500);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.05);
+}
+/* White: for dark tiles */
+.pc-white .pip{
+  background:radial-gradient(circle at 35% 28%,#ffffff,#d0d0d0);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.2);
+}
 
-/* Opp backs */
-.back-ivory{background:linear-gradient(135deg,#c8b890,#9a8860);border-color:#7a6840;}
-.back-ebony{background:linear-gradient(135deg,#2e2e2e,#111);border-color:#444;}
-.back-wood{background:linear-gradient(135deg,#a07040,#6a4820);border-color:#4a3010;}
+/* Opp backs — plain colored backs */
+.back-ivory{background:#c8b890;border:2px solid #9a8860;}
+.back-ebony{background:#1e1e1e;border:2px solid #333;}
+.back-wood{background:#9a6830;border:2px solid #6a4018;}
 
 /* Choose side buttons */
 .csb{display:inline-block;padding:2px 10px;border-radius:13px;border:1.5px solid var(--gold);color:var(--gold);background:rgba(212,160,23,.08);cursor:pointer;font-family:'Nunito',sans-serif;font-size:.7rem;font-weight:800;transition:background .15s;margin:0 3px;}
@@ -530,22 +538,14 @@ img{display:block;}
 
   <!-- Status -->
   <div id="status-bar">Carregando…</div>
+  <div id="bone-count-badge" style="position:absolute;top:76px;left:50%;transform:translateX(-50%) translateX(120px);z-index:100;background:rgba(0,0,0,.5);border:1px solid rgba(212,160,23,.3);border-radius:12px;padding:2px 10px;font-size:.6rem;font-weight:800;color:rgba(212,160,23,.7);pointer-events:none;">🂠 <span id="bone-cnt">0</span></div>
 
   <!-- Table (pointer-events:none in CSS) -->
   <div id="table-wrap">
     <div id="table-rim"></div>
     <div id="felt">
       <div id="felt-brand">Clube do Dominó</div>
-      <!-- Boneyard re-enables pointer-events -->
-      <div id="boneyard" onclick="playerDraw()" title="Comprar pedra">
-        <div class="bone-stack">
-          <div class="bone-card"></div>
-          <div class="bone-card"></div>
-          <div class="bone-card"></div>
-        </div>
-        <div class="bone-lbl">Boneyard</div>
-        <div class="bone-cnt" id="bone-cnt">0</div>
-      </div>
+
       <!-- Board re-enables pointer-events -->
       <div id="board-wrap">
         <div id="board"><div class="board-ph">— Jogue a primeira pedra —</div></div>
@@ -618,7 +618,7 @@ const sb=supabase.createClient(SURL,SKEY,{auth:{flowType:'pkce',detectSessionInU
    TILE STYLES (3 only)
 ══════════════════════════════════ */
 const STYLES=[
-  {id:'ivory',theme:'t-ivory',color:'pc-classic',backCls:'back-ivory',boneBg:'linear-gradient(135deg,#c8b890,#9a8860)',boneBorder:'#7a6840',label:'Marfim Clássico',desc:'Pontos pretos sobre marfim'},
+  {id:'ivory',theme:'t-ivory',color:'pc-classic',backCls:'back-ivory',label:'Marfim Clássico',desc:'Pontos pretos sobre marfim'},
   {id:'ebony',theme:'t-ebony',color:'pc-white',  backCls:'back-ebony', boneBg:'linear-gradient(135deg,#2e2e2e,#111)',    boneBorder:'#444',   label:'Ébano',          desc:'Pontos brancos sobre preto'},
   {id:'wood', theme:'t-wood', color:'pc-white',  backCls:'back-wood',  boneBg:'linear-gradient(135deg,#a07040,#6a4820)', boneBorder:'#4a3010',label:'Madeira',         desc:'Pontos brancos sobre madeira'},
 ];
@@ -635,14 +635,9 @@ function saveMyStyle(idx){
     if(chk) chk.textContent=i===idx?'✓':'';
   });
   // Update boneyard backs
-  applyBoneyard();
   showToast('✓ Estilo salvo!');
 }
-function applyBoneyard(){
-  const s=getStyle();
-  document.querySelectorAll('.bone-card').forEach(c=>{c.style.background=s.boneBg;c.style.borderColor=s.boneBorder;c.style.border='1.5px solid '+s.boneBorder;});
-  document.querySelectorAll('.opp-back').forEach(c=>{c.className='opp-back '+s.backCls;});
-}
+
 
 /* ══════════════════════════════════
    STATE
@@ -871,7 +866,6 @@ function setupGameUI(){
   const photo=m.avatar_url||m.picture||'';
   document.getElementById('name-me').textContent=name;
   if(photo)document.getElementById('av-me').innerHTML=`<img src="${esc(photo)}" alt="">`;
-  applyBoneyard();
 }
 
 function startAiGame(){
@@ -1081,8 +1075,7 @@ function render(){
   const ring=document.getElementById('turn-ring');
   if(ring)ring.style.display=playerTurn&&!gameOver?'block':'none';
   // Boneyard
-  document.getElementById('bone-cnt').textContent=boneyard.length;
-  applyBoneyard();
+  
   // Board
   const board=document.getElementById('board');board.innerHTML='';
   if(!chain.length){
@@ -1109,6 +1102,7 @@ function render(){
   document.getElementById('sc-me').textContent=pScore;
   document.getElementById('sc-opp').textContent=oppScore;
   // Buttons
+  const boneEl=document.getElementById('bone-cnt');if(boneEl)boneEl.textContent=boneyard.length;
   document.getElementById('btn-draw').disabled=gameOver||!playerTurn||!boneyard.length;
   document.getElementById('btn-pass').disabled=gameOver||!playerTurn;
 }
