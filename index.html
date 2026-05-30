@@ -345,9 +345,9 @@ button{font-family:'Nunito',sans-serif;cursor:pointer;}
 @keyframes tileIn{from{opacity:0;transform:scale(.65) translateY(10px);}to{opacity:1;transform:none;}}
 
 /* Sizes */
-.tile.h {width:84px;height:42px;flex-direction:row;}  /* board normal */
-.tile.d {width:42px;height:84px;flex-direction:column;} /* board double */
-.tile.ph{width:64px;height:122px;flex-direction:column;} /* player hand */
+.tile.h {width:90px;height:46px;flex-direction:row;}
+.tile.d {width:46px;height:90px;flex-direction:column;}
+.tile.ph{width:68px;height:130px;flex-direction:column;}
 
 /* Hand interactions */
 .tile.ph:hover{transform:translateY(-12px) scale(1.06);}
@@ -358,9 +358,9 @@ button{font-family:'Nunito',sans-serif;cursor:pointer;}
 .tile.board-t:hover{transform:none;}
 
 /* Dividers */
-.div-h{width:1px;height:68%;flex-shrink:0;opacity:.5;}
-.div-v{height:1px;width:68%;flex-shrink:0;opacity:.5;}
-.half{flex:1;display:flex;align-items:center;justify-content:center;}
+.div-h{width:1.5px;height:70%;flex-shrink:0;opacity:.6;border-radius:1px;}
+.div-v{height:1.5px;width:70%;flex-shrink:0;opacity:.6;border-radius:1px;}
+.half{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:2px;min-width:0;min-height:0;}
 
 /* Pip grid */
 .pip-wrap{
@@ -369,73 +369,39 @@ button{font-family:'Nunito',sans-serif;cursor:pointer;}
   grid-template-rows:repeat(3,1fr);
   align-items:center;
   justify-items:center;
+  width:100%;height:100%;
+  padding:2px;
 }
-/* Pip sizes per tile type */
-.tile.h  .pip-wrap{width:26px;height:26px;}
-.tile.d  .pip-wrap{width:28px;height:28px;}
-.tile.ph .pip-wrap{width:38px;height:38px;}
-
-.pip{border-radius:50%;flex-shrink:0;}
-.tile.h  .pip{width:6px;height:6px;}
-.tile.d  .pip{width:6px;height:6px;}
-.tile.ph .pip{width:9px;height:9px;}
+.pip{border-radius:50%;flex-shrink:0;display:block;}
+.tile.h  .pip{width:5px;height:5px;}
+.tile.d  .pip{width:5px;height:5px;}
+.tile.ph .pip{width:8px;height:8px;}
 .pip.x{visibility:hidden;}
-/* Square style */
-.pip.sq{border-radius:1.5px;}
-/* Number style */
-.pip-num{display:flex;align-items:center;justify-content:center;font-weight:900;line-height:1;}
-.tile.h  .pip-num{font-size:12px;}
-.tile.d  .pip-num{font-size:13px;}
-.tile.ph .pip-num{font-size:17px;}
 
 /* ══ TILE THEMES ══ */
 /* IVORY */
 .t-ivory{
-  background:linear-gradient(160deg,#fdf8ee 0%,#f0e8d0 50%,#e4d8b8 100%);
-  border-color:#c0a860;
-  box-shadow:0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(0,0,0,.08), 2px 0 4px rgba(0,0,0,.15);
+  background:linear-gradient(160deg,#fefaf0 0%,#f4e8d0 50%,#e8d8b0 100%);
+  border-color:#c8b070;
+  box-shadow:0 6px 16px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.95), inset 0 -2px 0 rgba(0,0,0,.1), inset 2px 0 0 rgba(255,255,255,.4), inset -2px 0 0 rgba(0,0,0,.05);
 }
-.t-ivory .div-h,.t-ivory .div-v{background:linear-gradient(180deg,transparent,#b09050 40%,#b09050 60%,transparent);}
+.t-ivory .div-h,.t-ivory .div-v{background:linear-gradient(180deg,transparent,#a08840 40%,#a08840 60%,transparent);}
 
 /* EBONY */
 .t-ebony{
-  background:linear-gradient(160deg,#282828 0%,#1a1a1a 50%,#101010 100%);
-  border-color:#3a3a3a;
-  box-shadow:0 4px 14px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -1px 0 rgba(0,0,0,.5);
+  background:linear-gradient(160deg,#303030 0%,#1e1e1e 50%,#0e0e0e 100%);
+  border-color:#484848;
+  box-shadow:0 6px 16px rgba(0,0,0,.75), inset 0 2px 0 rgba(255,255,255,.1), inset 0 -2px 0 rgba(0,0,0,.6), inset 2px 0 0 rgba(255,255,255,.05);
 }
-.t-ebony .div-h,.t-ebony .div-v{background:linear-gradient(180deg,transparent,#555 40%,#555 60%,transparent);}
+.t-ebony .div-h,.t-ebony .div-v{background:linear-gradient(180deg,transparent,#606060 40%,#606060 60%,transparent);}
 
 /* WOOD */
 .t-wood{
-  background:linear-gradient(160deg,#c8904a 0%,#a87030 40%,#8a5820 100%);
-  border-color:#6a4018;
-  box-shadow:0 4px 14px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,180,80,.3), inset 0 -1px 0 rgba(0,0,0,.3);
+  background:linear-gradient(160deg,#d49858 0%,#b07838 40%,#8a5820 100%);
+  border-color:#7a5020;
+  box-shadow:0 6px 16px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,200,100,.35), inset 0 -2px 0 rgba(0,0,0,.35), inset 2px 0 0 rgba(255,200,100,.15);
 }
-.t-wood .div-h,.t-wood .div-v{background:linear-gradient(180deg,transparent,rgba(0,0,0,.4) 40%,rgba(0,0,0,.4) 60%,transparent);}
-
-/* JADE */
-.t-jade{
-  background:linear-gradient(160deg,#2a6a44 0%,#1e5234 50%,#143a24 100%);
-  border-color:#3a8a54;
-  box-shadow:0 4px 14px rgba(0,0,0,.6), inset 0 1px 0 rgba(100,220,140,.2);
-}
-.t-jade .div-h,.t-jade .div-v{background:linear-gradient(180deg,transparent,rgba(100,220,140,.3) 40%,rgba(100,220,140,.3) 60%,transparent);}
-
-/* SAPPHIRE */
-.t-sapphire{
-  background:linear-gradient(160deg,#1e406a 0%,#122850 50%,#0a1838 100%);
-  border-color:#2a5aaa;
-  box-shadow:0 4px 14px rgba(0,0,0,.65), inset 0 1px 0 rgba(100,150,255,.15);
-}
-.t-sapphire .div-h,.t-sapphire .div-v{background:linear-gradient(180deg,transparent,rgba(80,130,220,.4) 40%,rgba(80,130,220,.4) 60%,transparent);}
-
-/* OBSIDIAN */
-.t-obsidian{
-  background:linear-gradient(160deg,#1a1a2a 0%,#10101e 50%,#080810 100%);
-  border-color:rgba(140,80,220,.4);
-  box-shadow:0 4px 14px rgba(0,0,0,.7), inset 0 1px 0 rgba(160,100,255,.1), 0 0 8px rgba(120,60,200,.15);
-}
-.t-obsidian .div-h,.t-obsidian .div-v{background:linear-gradient(180deg,transparent,rgba(140,80,220,.35) 40%,rgba(140,80,220,.35) 60%,transparent);}
+.t-wood .div-h,.t-wood .div-v{background:linear-gradient(180deg,transparent,rgba(0,0,0,.45) 40%,rgba(0,0,0,.45) 60%,transparent);}
 
 /* ══ PIP COLORS ══ */
 /* Classic dark */
@@ -444,23 +410,13 @@ button{font-family:'Nunito',sans-serif;cursor:pointer;}
 /* White */
 .pc-white .pip{background:radial-gradient(circle at 32% 28%,#ffffff,#d0d0d0);box-shadow:inset 0 1px 2px rgba(0,0,0,.3);}
 .pc-white .pip-num{color:#f0f0f0;text-shadow:0 1px 2px rgba(0,0,0,.5);}
-/* Gold */
-.pc-gold .pip{background:radial-gradient(circle at 32% 28%,#f8e060,#c09020);box-shadow:0 0 4px rgba(240,192,64,.4);}
-.pc-gold .pip-num{color:#c09020;}
-/* Color by value */
-.pc-color .pip.c0{background:radial-gradient(circle at 32% 28%,#aaa,#555);}
-.pc-color .pip.c1,.pc-color .pip.c2{background:radial-gradient(circle at 32% 28%,#ff7070,#c02020);}
-.pc-color .pip.c3,.pc-color .pip.c4{background:radial-gradient(circle at 32% 28%,#70d070,#208020);}
-.pc-color .pip.c5,.pc-color .pip.c6{background:radial-gradient(circle at 32% 28%,#c070e8,#7020a0);}
-.pc-color .pip-num.c0{color:#888;} .pc-color .pip-num.c1,.pc-color .pip-num.c2{color:#c02020;} .pc-color .pip-num.c3,.pc-color .pip-num.c4{color:#208020;} .pc-color .pip-num.c5,.pc-color .pip-num.c6{color:#7020a0;}
-
 /* Opp backs */
 .opp-back-ivory{background:linear-gradient(135deg,#c8b890,#9a8860);border:1px solid #7a6840;}
 .opp-back-ebony{background:linear-gradient(135deg,#2a2a2a,#111);border:1px solid #3a3a3a;}
 .opp-back-wood{background:linear-gradient(135deg,#a07040,#6a4820);border:1px solid #4a3010;}
-.opp-back-jade{background:linear-gradient(135deg,#2a6044,#1a4030);border:1px solid #3a8050;}
-.opp-back-sapphire{background:linear-gradient(135deg,#1a3060,#0a1a40);border:1px solid #2a4a80;}
-.opp-back-obsidian{background:linear-gradient(135deg,#1a1a2a,#0a0a18);border:1px solid rgba(120,60,200,.3);}
+
+
+
 
 /* Choose side */
 .choose-btn{display:inline-block;padding:2px 10px;border-radius:14px;border:1.5px solid var(--gold);color:var(--gold);background:rgba(212,160,23,.08);cursor:pointer;font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:800;transition:background .15s;margin:0 3px;}
@@ -494,15 +450,12 @@ button{font-family:'Nunito',sans-serif;cursor:pointer;}
    RESPONSIVE
 ═══════════════════════════════════ */
 @media(max-width:560px){
-  .tile.h{width:68px;height:34px;}
-  .tile.d{width:34px;height:68px;}
-  .tile.ph{width:52px;height:98px;}
-  .tile.h .pip-wrap,.tile.d .pip-wrap{width:20px;height:20px;}
-  .tile.ph .pip-wrap{width:30px;height:30px;}
-  .tile.h .pip,.tile.d .pip{width:5px;height:5px;}
+  .tile.h{width:72px;height:36px;}
+  .tile.d{width:36px;height:72px;}
+  .tile.ph{width:56px;height:108px;}
+  .tile.h .pip{width:4px;height:4px;}
+  .tile.d .pip{width:4px;height:4px;}
   .tile.ph .pip{width:7px;height:7px;}
-  .tile.h .pip-num{font-size:10px;}
-  .tile.ph .pip-num{font-size:14px;}
   .av-lg{width:40px;height:40px;font-size:1.1rem;}
   .av-sm{width:32px;height:32px;font-size:.85rem;}
 }
@@ -696,12 +649,9 @@ let pScore=0,oppScore=0,opponents=[];
 
 /* Tile style — per user, saved in localStorage */
 const STYLES=[
-  {id:'ivory', theme:'t-ivory', pip:'dots', color:'pc-classic', felt:'green',  rimBg:'linear-gradient(160deg,#a06030,#7a4828,#5a3218)', feltBg:'radial-gradient(ellipse at 50% 40%,#2a7a42 0%,#1e6030 50%,#143e20 100%)', backCls:'opp-back-ivory', boneBg:'linear-gradient(160deg,#c8b890,#9a8860)', boneBorder:'#7a6840', label:'Marfim Clássico', desc:'Pontos pretos · Mesa verde'},
-  {id:'ebony', theme:'t-ebony', pip:'dots', color:'pc-white',   felt:'dark',   rimBg:'linear-gradient(160deg,#3a3a3a,#222,#111)',         feltBg:'radial-gradient(ellipse at 50% 40%,#1a1a1a 0%,#0e0e0e 50%,#080808 100%)',       backCls:'opp-back-ebony', boneBg:'linear-gradient(160deg,#2a2a2a,#111)', boneBorder:'#3a3a3a', label:'Ébano', desc:'Pontos brancos · Mesa preta'},
-  {id:'wood',  theme:'t-wood',  pip:'dots', color:'pc-white',   felt:'brown',  rimBg:'linear-gradient(160deg,#6a4020,#4a2c10,#301808)',    feltBg:'radial-gradient(ellipse at 50% 40%,#3a2210 0%,#2a1808 50%,#1a1004 100%)',      backCls:'opp-back-wood',  boneBg:'linear-gradient(160deg,#a07040,#6a4820)', boneBorder:'#4a3010', label:'Madeira', desc:'Pontos brancos · Mesa rústica'},
-  {id:'jade',  theme:'t-jade',  pip:'dots', color:'pc-gold',    felt:'jade',   rimBg:'linear-gradient(160deg,#2a5a38,#1a3a24,#0e2018)',    feltBg:'radial-gradient(ellipse at 50% 40%,#1a4a2a 0%,#103018 50%,#081e10 100%)',     backCls:'opp-back-jade',  boneBg:'linear-gradient(160deg,#2a6044,#1a4030)', boneBorder:'#3a8050', label:'Jade', desc:'Pontos dourados · Mesa escura'},
-  {id:'sapphire',theme:'t-sapphire',pip:'dots',color:'pc-white',felt:'blue',   rimBg:'linear-gradient(160deg,#1a3a7a,#0e2250,#061430)',    feltBg:'radial-gradient(ellipse at 50% 40%,#0e2448 0%,#081630 50%,#040c1e 100%)',     backCls:'opp-back-sapphire',boneBg:'linear-gradient(160deg,#1a3060,#0a1a40)',boneBorder:'#2a4a80',label:'Safira',desc:'Pontos brancos · Mesa azul'},
-  {id:'obsidian',theme:'t-obsidian',pip:'dots',color:'pc-gold', felt:'purple', rimBg:'linear-gradient(160deg,#2a1a4a,#1a0e30,#0e0820)',    feltBg:'radial-gradient(ellipse at 50% 40%,#1a0e30 0%,#100820 50%,#080410 100%)',    backCls:'opp-back-obsidian',boneBg:'linear-gradient(160deg,#1a1a2a,#0a0a18)',boneBorder:'rgba(120,60,200,.3)',label:'Obsidiana',desc:'Pontos dourados · Mesa roxa'},
+  {id:'ivory',   theme:'t-ivory',   color:'pc-classic', feltBg:'radial-gradient(ellipse at 50% 40%,#2a7a42 0%,#1e6030 50%,#143e20 100%)', rimBg:'linear-gradient(160deg,#a06030,#7a4828,#5a3218)', backCls:'opp-back-ivory',   boneBg:'linear-gradient(160deg,#c8b890,#9a8860)', boneBorder:'#7a6840', label:'Marfim Clássico', desc:'Pontos pretos · Mesa verde'},
+  {id:'ebony',   theme:'t-ebony',   color:'pc-white',   feltBg:'radial-gradient(ellipse at 50% 40%,#1a1a1a 0%,#0e0e0e 50%,#080808 100%)', rimBg:'linear-gradient(160deg,#3a3a3a,#222,#111)',         backCls:'opp-back-ebony',   boneBg:'linear-gradient(160deg,#2a2a2a,#111)',     boneBorder:'#3a3a3a', label:'Ébano',          desc:'Pontos brancos · Mesa preta'},
+  {id:'wood',    theme:'t-wood',    color:'pc-white',   feltBg:'radial-gradient(ellipse at 50% 40%,#3a2210 0%,#2a1808 50%,#1a1004 100%)', rimBg:'linear-gradient(160deg,#6a4020,#4a2c10,#301808)',    backCls:'opp-back-wood',    boneBg:'linear-gradient(160deg,#a07040,#6a4820)',  boneBorder:'#4a3010', label:'Madeira',        desc:'Pontos brancos · Mesa rústica'},
 ];
 let myStyleIdx=0;
 
@@ -711,7 +661,14 @@ function loadMyStyle(){
   if(myStyleIdx<0||myStyleIdx>=STYLES.length) myStyleIdx=0;
 }
 function saveMyStyle(idx){
-  myStyleIdx=idx; localStorage.setItem('cdom_style',idx);
+  myStyleIdx=idx;
+  localStorage.setItem('cdom_style',idx);
+  // Update UI immediately — re-render cards
+  document.querySelectorAll('.style-card').forEach((el,i)=>{
+    el.classList.toggle('sel', i===idx);
+    const chk=el.querySelector('.style-card-check');
+    if(chk) chk.textContent=i===idx?'✓':'○';
+  });
   applyFelt();
   showToast('✓ Estilo salvo!');
 }
@@ -1062,10 +1019,21 @@ function commit(idx,side){
 }
 
 function playerDraw(){
-  if(gameOver||!playerTurn){setStatus(gameOver?'Jogo encerrado.':'Aguarde sua vez!');return;}
-  if(!boneyard.length){setStatus('Boneyard vazio! Passe a vez.');return;}
-  const t=boneyard.pop();playerHand.push(t);selected=null;render();
-  setStatus(anyCanPlay(playerHand)?`Comprou [${t[0]}·${t[1]}]. Agora jogue!`:`Comprou [${t[0]}·${t[1]}]. Sem jogadas — passe.`);
+  if(gameOver){ return; }
+  if(!playerTurn){ setStatus('Aguarde sua vez!'); return; }
+  if(!boneyard.length){ setStatus('Boneyard vazio! Você deve passar.'); return; }
+  const t=boneyard.pop();
+  playerHand.push(t);
+  selected=null;
+  render();
+  if(anyCanPlay(playerHand)){
+    setStatus('Comprou ['+t[0]+'·'+t[1]+']. Agora jogue uma pedra!');
+  } else {
+    setStatus('Comprou ['+t[0]+'·'+t[1]+']. Sem jogadas — clique em Passar.');
+    // Enable pass button explicitly
+    const pb=document.getElementById('btn-pass');
+    if(pb) pb.disabled=false;
+  }
 }
 
 function playerPass(){
@@ -1136,12 +1104,16 @@ function esc(t){return(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 const PIPS={0:[],1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[0,2],[2,0],[2,2]],5:[[0,0],[0,2],[1,1],[2,0],[2,2]],6:[[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]]};
 
 function makePipContent(n, s){
-  const wrap=document.createElement('div'); wrap.className='pip-wrap';
-  for(let r=0;r<3;r++) for(let c=0;c<3;c++){
-    const active=PIPS[n].some(([pr,pc])=>pr===r&&pc===c);
-    const d=document.createElement('div');
-    d.className='pip'+(active?` c${n}`:'  x');
-    wrap.appendChild(d);
+  const wrap=document.createElement('div');
+  wrap.className='pip-wrap';
+  wrap.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);align-items:center;justify-items:center;width:100%;height:100%;padding:1px;';
+  for(let r=0;r<3;r++){
+    for(let c=0;c<3;c++){
+      const active=PIPS[n].some(([pr,pc])=>pr===r&&pc===c);
+      const d=document.createElement('div');
+      d.className='pip'+(active?' c'+n:' x');
+      wrap.appendChild(d);
+    }
   }
   return wrap;
 }
@@ -1153,9 +1125,12 @@ function makeTileEl(a,b,sizeClass,handler){
   el.className=`tile ${sizeClass} ${s.theme} ${s.color}`;
   if(handler) el.onclick=handler;
 
-  const h1=document.createElement('div');h1.className='half';h1.appendChild(makePipContent(a,s));
+  const pipSz=sizeClass.includes('ph')?'38px':sizeClass.includes('d')?'30px':'26px';
+  const h1=document.createElement('div');h1.className='half';
+  const pw1=makePipContent(a,s); pw1.style.width=pipSz; pw1.style.height=pipSz; h1.appendChild(pw1);
   const dv=document.createElement('div');dv.className=isVertical?'div-v':'div-h';
-  const h2=document.createElement('div');h2.className='half';h2.appendChild(makePipContent(b,s));
+  const h2=document.createElement('div');h2.className='half';
+  const pw2=makePipContent(b,s); pw2.style.width=pipSz; pw2.style.height=pipSz; h2.appendChild(pw2);
   el.appendChild(h1);el.appendChild(dv);el.appendChild(h2);
   return el;
 }
@@ -1202,11 +1177,10 @@ function render(){
   document.getElementById('sc-me').textContent=pScore;
   document.getElementById('sc-opp').textContent=oppScore;
   // Buttons
-  const nd=!playerTurn||gameOver;
   const db=document.getElementById('btn-draw');
   const pb=document.getElementById('btn-pass');
-  if(db) db.disabled=nd||!boneyard.length;
-  if(pb) pb.disabled=nd;
+  if(db) db.disabled = gameOver || !playerTurn || boneyard.length===0;
+  if(pb) pb.disabled = gameOver || !playerTurn;
 }
 
 /* ══════════════════════════════════════
