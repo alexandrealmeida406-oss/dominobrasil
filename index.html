@@ -138,7 +138,7 @@ body{font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at cente
 
 #felt-brand{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:rgba(255,255,255,.07);letter-spacing:6px;text-transform:uppercase;white-space:nowrap;pointer-events:none;z-index:1;user-select:none;}
 
-#board-area{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;max-width:88%;max-height:68%;z-index:3;}
+#board-area{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow-x:auto;max-width:88%;z-index:3;padding:4px 8px;}#board-area::-webkit-scrollbar{height:3px;}#board-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px;}
 .board-ph{color:rgba(255,255,255,.15);font-size:.85rem;font-weight:700;letter-spacing:2px;text-align:center;}
 
 #boneyard{position:absolute;top:14px;left:18px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;}
@@ -880,7 +880,18 @@ async function leaveRoom(){
   listenRooms();
 }
 
-function leaveGame(){ leaveRoom(); }
+function leaveGame(){
+  if(currentRoomId){
+    leaveRoom();
+  } else {
+    // AI mode - just go back to lobby
+    gameOver=true;
+    chain=[]; playerHand=[]; aiHand=[]; boneyard=[];
+    pScore=0; oppScore=0;
+    showScreen('lobby');
+    listenRooms();
+  }
+}
 
 function stopListening(){
   if (roomChannel)  { sb.removeChannel(roomChannel);  roomChannel  = null; }
@@ -923,19 +934,26 @@ function commit(idx,side){
 }
 
 function playerDraw(){
-  if(!playerTurn||gameOver)return;
-  if(!boneyard.length){setStatus('Boneyard vazio!');return;}
-  const t=boneyard.pop();playerHand.push(t);
-  setStatus(`Comprou [${t[0]}·${t[1]}]. ${anyCanPlay(playerHand)?'Pode jogar!':'Sem jogadas — passe.'}`);
-  selected=null;render();
+  if(!playerTurn||gameOver){ setStatus('Não é sua vez!'); return; }
+  if(!boneyard.length){ setStatus('Boneyard vazio! Passe a vez.'); return; }
+  const t=boneyard.pop();
+  playerHand.push(t);
+  selected=null;
+  render();
+  if(anyCanPlay(playerHand)){
+    setStatus(`Você comprou [${t[0]}·${t[1]}]. Agora jogue!`);
+  } else {
+    setStatus(`Você comprou [${t[0]}·${t[1]}]. Sem jogadas — passe.`);
+    document.getElementById('btn-pass').disabled = false;
+  }
 }
 
 function playerPass(){
-  if(!playerTurn||gameOver)return;
-  if(boneyard.length){setStatus('Compre antes de passar!');return;}
-  if(anyCanPlay(playerHand)){setStatus('Você tem peças que encaixam!');return;}
+  if(!playerTurn||gameOver){ setStatus('Não é sua vez!'); return; }
+  if(boneyard.length && anyCanPlay(playerHand)){ setStatus('Você tem peças que encaixam! Jogue ou compre.'); return; }
+  if(anyCanPlay(playerHand)){ setStatus('Você tem peças que encaixam!'); return; }
   setStatus('Você passou. Vez do oponente…');
-  playerTurn=false;render();setTimeout(aiTurn,700);
+  playerTurn=false; render(); setTimeout(aiTurn,700);
 }
 
 function aiTurn(){
@@ -1032,7 +1050,7 @@ function render(){
   document.getElementById('bone-count').textContent=boneyard.length;
   const board=document.getElementById('board-area');board.innerHTML='';
   if(!chain.length){const ph=document.createElement('div');ph.className='board-ph';ph.textContent='— Jogue a primeira peça —';board.appendChild(ph);}
-  else{const useV=chain.length>10;chain.forEach(({tile,flip})=>{const[a,b]=flip?[tile[1],tile[0]]:[tile[0],tile[1]];const el=makeTile(a,b,(useV?'v':'h')+' board-t',null);board.appendChild(el);});}
+  else{chain.forEach(({tile,flip})=>{const[a,b]=flip?[tile[1],tile[0]]:[tile[0],tile[1]];const el=makeTile(a,b,'h board-t',null);board.appendChild(el);});}
   const handEl=document.getElementById('player-hand');handEl.innerHTML='';
   playerHand.forEach((tile,i)=>{
     const ok=canPlay(tile),sel=selected===i;
@@ -1043,8 +1061,10 @@ function render(){
   document.getElementById('p-score').textContent=pScore;
   document.getElementById('ai-score').textContent=oppScore;
   const nd=!playerTurn||gameOver;
-  document.getElementById('btn-draw').disabled=nd||!boneyard.length;
-  document.getElementById('btn-pass').disabled=nd;
+  const drawBtn = document.getElementById('btn-draw');
+  const passBtn = document.getElementById('btn-pass');
+  if(drawBtn) drawBtn.disabled = nd || !boneyard.length;
+  if(passBtn) passBtn.disabled = nd;
 }
 </script>
 </body>
