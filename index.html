@@ -440,7 +440,10 @@ function showScreen(id){
 /* ═══════════════════════════════════════════
    AUTH
 ═══════════════════════════════════════════ */
+// Auth state change — fires when session changes AFTER initial load
 sb.auth.onAuthStateChange(async (event, session) => {
+  // Ignore initial INITIAL_SESSION event — handled by init below
+  if (event === 'INITIAL_SESSION') return;
   currentUser = session?.user || null;
   if (currentUser) {
     updateLobbyUser();
@@ -452,23 +455,29 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-// Init — handle OAuth callback + check session
+// Init — handle OAuth callback + check existing session
 (async () => {
-  // Handle OAuth redirect (PKCE flow) — Supabase puts code in URL
-  const params = new URLSearchParams(window.location.search);
-  const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
+  showScreen('loading');
 
-  if (params.get('code') || hashParams.get('access_token')) {
-    // Exchange code for session
-    const { data, error } = await sb.auth.exchangeCodeForSession(window.location.href);
-    if (!error && data?.session) {
-      // Clean URL
+  // Handle PKCE OAuth redirect (code in URL)
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('code')) {
+    try {
+      await sb.auth.exchangeCodeForSession(window.location.href);
       window.history.replaceState({}, document.title, window.location.pathname);
-    }
+    } catch(e) { console.warn('exchangeCodeForSession:', e); }
   }
 
+  // Handle implicit flow (token in hash)
+  const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
+  if (hashParams.get('access_token')) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  // Get session (works for both new and returning users)
   const { data: { session } } = await sb.auth.getSession();
   currentUser = session?.user || null;
+
   if (currentUser) {
     updateLobbyUser();
     showScreen('lobby');
