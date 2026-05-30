@@ -541,6 +541,40 @@ button{font-family:'Nunito',sans-serif;}
 /* Opp back default */
 .opp-back{background:linear-gradient(160deg,#b0a070,#887050);border:1px solid #705030;}
 
+/* ── Tile picker cards ── */
+.tile-pick{
+  display:flex;align-items:center;gap:14px;
+  background:rgba(255,255,255,.04);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:14px;padding:14px;
+  cursor:pointer;transition:all .2s;margin-bottom:10px;
+}
+.tile-pick:hover{background:rgba(232,184,48,.06);border-color:rgba(232,184,48,.3);}
+.tile-pick.sel{background:rgba(232,184,48,.1);border-color:#e8b830;box-shadow:0 0 0 1px rgba(232,184,48,.3);}
+.tile-pick-preview{flex-shrink:0;}
+.tile-pick-info{flex:1;}
+.tile-pick-name{font-size:.9rem;font-weight:800;color:#fff;}
+.tile-pick-desc{font-size:.68rem;color:rgba(255,255,255,.4);margin-top:2px;}
+.tile-pick-check{font-size:1rem;color:#e8b830;opacity:0;transition:opacity .2s;}
+.tile-pick.sel .tile-pick-check{opacity:1;}
+
+/* Mini domino preview in picker */
+.mprev{
+  width:72px;height:38px;
+  border-radius:6px;border:2px solid;
+  display:flex;flex-direction:row;align-items:center;
+  box-shadow:0 3px 10px rgba(0,0,0,.4);
+}
+.mprev .half{flex:1;display:flex;align-items:center;justify-content:center;}
+.mprev .div-h{width:1.5px;height:70%;flex-shrink:0;}
+.mprev .pip-wrap{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:24px;height:24px;align-items:center;justify-items:center;}
+.mprev .pip{width:5px;height:5px;border-radius:50%;}
+.mprev .pip.x{visibility:hidden;}
+
+/* Colors for preview pips */
+.mprev.pc-white .pip{background:rgba(255,255,255,.85);}
+.mprev.pc-classic .pip{background:#222;}
+
 /* ── Choose side buttons ── */
 .choose-btn{
   display:inline-block;padding:2px 10px;border-radius:16px;
@@ -684,105 +718,86 @@ button{font-family:'Nunito',sans-serif;}
   </div>
 </div>
 
-<!-- ══ MODAL: CUSTOMIZAR PEDRAS ══ -->
+<!-- ══ MODAL: ESCOLHER PEDRA ══ -->
 <div class="modal-overlay" id="modal-customize">
-  <div class="modal-box" style="max-height:90vh;overflow-y:auto;">
-    <div class="modal-title">Personalizar Pedras</div>
-    <div class="modal-sub">Escolha o estilo da sua mesa</div>
+  <div class="modal-box">
+    <div class="modal-title">Escolha as Pedras</div>
+    <div class="modal-sub">Selecione o estilo para a partida</div>
 
-    <div class="custom-section">
-      <div class="custom-label">Estilo da Pedra</div>
-      <div class="custom-row" id="pick-theme">
-        <div class="custom-opt sel" data-val="ivory" onclick="pickOpt(this,'theme')">
-          <div class="mini-dom th-ivory"><div class="mini-pip" style="background:#333;width:5px;height:5px;border-radius:50%;"></div><div class="mini-sep" style="background:#a08040;"></div><div class="mini-pip" style="background:#333;width:5px;height:5px;border-radius:50%;"></div></div>
-          <div class="label">Marfim</div>
-        </div>
-        <div class="custom-opt" data-val="ebony" onclick="pickOpt(this,'theme')">
-          <div class="mini-dom th-ebony"><div class="mini-pip" style="background:#eee;width:5px;height:5px;border-radius:50%;"></div><div class="mini-sep" style="background:#666;"></div><div class="mini-pip" style="background:#eee;width:5px;height:5px;border-radius:50%;"></div></div>
-          <div class="label">Ébano</div>
-        </div>
-        <div class="custom-opt" data-val="wood" onclick="pickOpt(this,'theme')">
-          <div class="mini-dom th-wood"><div class="mini-pip" style="background:#3a2010;width:5px;height:5px;border-radius:50%;"></div><div class="mini-sep" style="background:#5a3010;"></div><div class="mini-pip" style="background:#3a2010;width:5px;height:5px;border-radius:50%;"></div></div>
-          <div class="label">Madeira</div>
-        </div>
-        <div class="custom-opt" data-val="jade" onclick="pickOpt(this,'theme')">
-          <div class="mini-dom th-jade"><div class="mini-pip" style="background:#90f0a0;width:5px;height:5px;border-radius:50%;"></div><div class="mini-sep" style="background:#3a8050;"></div><div class="mini-pip" style="background:#90f0a0;width:5px;height:5px;border-radius:50%;"></div></div>
-          <div class="label">Jade</div>
-        </div>
-        <div class="custom-opt" data-val="sapphire" onclick="pickOpt(this,'theme')">
-          <div class="mini-dom th-sapphire"><div class="mini-pip" style="background:#aaccff;width:5px;height:5px;border-radius:50%;"></div><div class="mini-sep" style="background:#4a80cc;"></div><div class="mini-pip" style="background:#aaccff;width:5px;height:5px;border-radius:50%;"></div></div>
-          <div class="label">Safira</div>
-        </div>
-        <div class="custom-opt" data-val="crimson" onclick="pickOpt(this,'theme')">
-          <div class="mini-dom th-crimson"><div class="mini-pip" style="background:#ffaaaa;width:5px;height:5px;border-radius:50%;"></div><div class="mini-sep" style="background:#aa3030;"></div><div class="mini-pip" style="background:#ffaaaa;width:5px;height:5px;border-radius:50%;"></div></div>
-          <div class="label">Rubi</div>
+    <!-- Opção 1: Madeira -->
+    <div class="tile-pick sel" id="pick-0" onclick="selectTileStyle(0)">
+      <div class="tile-pick-preview">
+        <!-- Mini domino madeira -->
+        <div class="mprev t-wood pc-white">
+          <div class="half"><div class="pip-wrap">
+            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+            <div class="pip x"></div><div class="pip c3"></div><div class="pip x"></div>
+            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+          </div></div>
+          <div class="div-h"></div>
+          <div class="half"><div class="pip-wrap">
+            <div class="pip c4"></div><div class="pip x"></div><div class="pip c4"></div>
+            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+            <div class="pip c4"></div><div class="pip x"></div><div class="pip c4"></div>
+          </div></div>
         </div>
       </div>
+      <div class="tile-pick-info">
+        <div class="tile-pick-name">🪵 Madeira</div>
+        <div class="tile-pick-desc">Pontos brancos sobre madeira</div>
+      </div>
+      <div class="tile-pick-check">✓</div>
     </div>
 
-    <div class="custom-section">
-      <div class="custom-label">Tipo de Marcação</div>
-      <div class="custom-row" id="pick-pip">
-        <div class="custom-opt sel" data-val="dots" onclick="pickOpt(this,'pip')">
-          <div style="display:flex;gap:3px;padding:4px;">
-            <div style="width:6px;height:6px;border-radius:50%;background:#333;"></div>
-            <div style="width:6px;height:6px;border-radius:50%;background:#333;"></div>
-            <div style="width:6px;height:6px;border-radius:50%;background:#333;"></div>
-          </div>
-          <div class="label">Pontos</div>
-        </div>
-        <div class="custom-opt" data-val="numbers" onclick="pickOpt(this,'pip')">
-          <div style="font-size:1rem;font-weight:900;color:#333;padding:2px 4px;">6·3</div>
-          <div class="label">Números</div>
-        </div>
-        <div class="custom-opt" data-val="squares" onclick="pickOpt(this,'pip')">
-          <div style="display:flex;gap:3px;padding:4px;">
-            <div style="width:6px;height:6px;border-radius:1px;background:#333;"></div>
-            <div style="width:6px;height:6px;border-radius:1px;background:#333;"></div>
-          </div>
-          <div class="label">Quadrados</div>
+    <!-- Opção 2: Ébano -->
+    <div class="tile-pick" id="pick-1" onclick="selectTileStyle(1)">
+      <div class="tile-pick-preview">
+        <div class="mprev t-ebony pc-white">
+          <div class="half"><div class="pip-wrap">
+            <div class="pip c1"></div><div class="pip x"></div><div class="pip c1"></div>
+            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+            <div class="pip c1"></div><div class="pip x"></div><div class="pip c1"></div>
+          </div></div>
+          <div class="div-h"></div>
+          <div class="half"><div class="pip-wrap">
+            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+            <div class="pip x"></div><div class="pip c2"></div><div class="pip x"></div>
+            <div class="pip x"></div><div class="pip x"></div><div class="pip x"></div>
+          </div></div>
         </div>
       </div>
+      <div class="tile-pick-info">
+        <div class="tile-pick-name">🖤 Ébano</div>
+        <div class="tile-pick-desc">Pontos brancos sobre preto</div>
+      </div>
+      <div class="tile-pick-check">✓</div>
     </div>
 
-    <div class="custom-section">
-      <div class="custom-label">Cor das Marcações</div>
-      <div class="custom-row" id="pick-color">
-        <div class="custom-opt sel" data-val="classic" onclick="pickOpt(this,'color')">
-          <div style="display:flex;gap:3px;padding:4px;"><div style="width:8px;height:8px;border-radius:50%;background:#111;"></div><div style="width:8px;height:8px;border-radius:50%;background:#333;"></div></div>
-          <div class="label">Clássico</div>
-        </div>
-        <div class="custom-opt" data-val="color" onclick="pickOpt(this,'color')">
-          <div style="display:flex;gap:3px;padding:4px;"><div style="width:8px;height:8px;border-radius:50%;background:#e83030;"></div><div style="width:8px;height:8px;border-radius:50%;background:#30b030;"></div></div>
-          <div class="label">Colorido</div>
-        </div>
-        <div class="custom-opt" data-val="gold" onclick="pickOpt(this,'color')">
-          <div style="display:flex;gap:3px;padding:4px;"><div style="width:8px;height:8px;border-radius:50%;background:#e8b830;"></div><div style="width:8px;height:8px;border-radius:50%;background:#c09020;"></div></div>
-          <div class="label">Ouro</div>
-        </div>
-        <div class="custom-opt" data-val="white" onclick="pickOpt(this,'color')">
-          <div style="display:flex;gap:3px;padding:4px;"><div style="width:8px;height:8px;border-radius:50%;background:#fff;border:1px solid #ccc;"></div><div style="width:8px;height:8px;border-radius:50%;background:#ddd;border:1px solid #bbb;"></div></div>
-          <div class="label">Branco</div>
-        </div>
-        <div class="custom-opt" data-val="neon" onclick="pickOpt(this,'color')">
-          <div style="display:flex;gap:3px;padding:4px;"><div style="width:8px;height:8px;border-radius:50%;background:#ff0088;box-shadow:0 0 4px #ff0088;"></div><div style="width:8px;height:8px;border-radius:50%;background:#00ff88;box-shadow:0 0 4px #00ff88;"></div></div>
-          <div class="label">Neon</div>
+    <!-- Opção 3: Marfim -->
+    <div class="tile-pick" id="pick-2" onclick="selectTileStyle(2)">
+      <div class="tile-pick-preview">
+        <div class="mprev t-ivory pc-classic">
+          <div class="half"><div class="pip-wrap">
+            <div class="pip c5"></div><div class="pip x"></div><div class="pip c5"></div>
+            <div class="pip x"></div><div class="pip c5"></div><div class="pip x"></div>
+            <div class="pip c5"></div><div class="pip x"></div><div class="pip c5"></div>
+          </div></div>
+          <div class="div-h"></div>
+          <div class="half"><div class="pip-wrap">
+            <div class="pip c6"></div><div class="pip x"></div><div class="pip c6"></div>
+            <div class="pip c6"></div><div class="pip x"></div><div class="pip c6"></div>
+            <div class="pip c6"></div><div class="pip x"></div><div class="pip c6"></div>
+          </div></div>
         </div>
       </div>
-    </div>
-
-    <div class="custom-section">
-      <div class="custom-label">Felt (Mesa)</div>
-      <div class="custom-row" id="pick-felt">
-        <div class="custom-opt sel" data-val="green" onclick="pickOpt(this,'felt')"><div style="width:32px;height:18px;border-radius:4px;background:radial-gradient(#2a7a42,#143e20);"></div><div class="label">Verde</div></div>
-        <div class="custom-opt" data-val="blue" onclick="pickOpt(this,'felt')"><div style="width:32px;height:18px;border-radius:4px;background:radial-gradient(#1a3a6a,#0a1e40);"></div><div class="label">Azul</div></div>
-        <div class="custom-opt" data-val="red" onclick="pickOpt(this,'felt')"><div style="width:32px;height:18px;border-radius:4px;background:radial-gradient(#5a1a1a,#2a0808);"></div><div class="label">Vermelho</div></div>
-        <div class="custom-opt" data-val="dark" onclick="pickOpt(this,'felt')"><div style="width:32px;height:18px;border-radius:4px;background:radial-gradient(#1a1a1a,#080808);"></div><div class="label">Preto</div></div>
-        <div class="custom-opt" data-val="purple" onclick="pickOpt(this,'felt')"><div style="width:32px;height:18px;border-radius:4px;background:radial-gradient(#2a1a4a,#100820);"></div><div class="label">Roxo</div></div>
+      <div class="tile-pick-info">
+        <div class="tile-pick-name">🦷 Marfim</div>
+        <div class="tile-pick-desc">Pontos clássicos sobre marfim</div>
       </div>
+      <div class="tile-pick-check">✓</div>
     </div>
 
-    <div style="display:flex;gap:8px;margin-top:4px;">
+    <div style="display:flex;gap:8px;margin-top:16px;">
       <button class="btn-sm" style="flex:1;padding:10px;" onclick="closeModal('modal-customize');showModal('modal-create')">← Voltar</button>
       <button class="btn-start" style="flex:2;" onclick="confirmCreate()">Criar Sala ›</button>
     </div>
@@ -909,7 +924,7 @@ let leftEnd=null, rightEnd=null;
 let playerTurn=true, selected=null, gameOver=false;
 let pScore=0, oppScore=0, opponents=[];
 // Style
-let tileStyle={ theme:'ivory', pip:'dots', color:'classic', felt:'green' };
+let tileStyle=Object.assign({},{theme:'wood',pip:'dots',color:'white',felt:'green'});
 let pendingMode={ players:2, type:'real' };
 
 /* ══════════════════════════════════════════
@@ -1018,6 +1033,20 @@ function openCustomize(players, type){
   pendingMode={ players, type };
   closeModal('modal-create');
   showModal('modal-customize');
+}
+
+// 3 preset tile styles
+const TILE_PRESETS=[
+  {theme:'wood',   pip:'dots', color:'white',   felt:'green'}, // Madeira branco
+  {theme:'ebony',  pip:'dots', color:'white',   felt:'green'}, // Ébano branco
+  {theme:'ivory',  pip:'dots', color:'classic', felt:'green'}, // Marfim clássico
+];
+let selectedPreset=0;
+
+function selectTileStyle(idx){
+  selectedPreset=idx;
+  document.querySelectorAll('.tile-pick').forEach((el,i)=>el.classList.toggle('sel',i===idx));
+  tileStyle=TILE_PRESETS[idx];
 }
 
 function pickOpt(el, group){
