@@ -184,8 +184,8 @@ img{display:block;}
   position:absolute;
   inset:18px 22px;
   border-radius:50%/42%;
-  background:#2d7a3a;
-  box-shadow:inset 0 0 40px rgba(0,0,0,.25);
+  background:#1a9a78;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.2);
 }
 /* Felt texture — pointer-events:none so clicks pass through */
 #felt::before{
@@ -201,31 +201,36 @@ img{display:block;}
   white-space:nowrap;pointer-events:none;user-select:none;z-index:2;
 }
 
-/* Board — inside felt, pointer-events:auto so tiles are clickable */
+/* Board — snake layout that wraps when hitting edge */
 #board-wrap{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:88%;max-height:70%;
-  overflow-x:auto;overflow-y:visible;
+  width:90%;max-height:86%;
+  overflow:hidden;
   z-index:3;
-  pointer-events:auto; /* tiles need to receive clicks */
-  display:flex;align-items:center;
+  pointer-events:auto;
+  display:flex;align-items:center;justify-content:center;
 }
-#board-wrap::-webkit-scrollbar{height:3px;}
-#board-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
-#board{display:flex;align-items:center;gap:2px;padding:4px 8px;min-width:max-content;}
-.board-ph{color:rgba(255,255,255,.12);font-size:.75rem;font-weight:700;letter-spacing:2px;white-space:nowrap;}
+#board{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:0;
+  width:100%;
+}
+.board-row{display:flex;align-items:center;gap:2px;flex-wrap:nowrap;}
+.board-ph{color:rgba(255,255,255,.15);font-size:.75rem;font-weight:700;letter-spacing:2px;text-align:center;width:100%;}
 
 
 
-/* Status bar */
+/* Status bar — pointer-events:auto so choose-side buttons work! */
 #status-bar{
   position:absolute;top:72px;left:50%;transform:translateX(-50%);
   z-index:100;
   background:rgba(8,7,0,.9);border:1px solid rgba(212,160,23,.2);
   border-radius:18px;padding:5px 16px;
   font-size:.7rem;font-weight:700;color:var(--text);
-  white-space:nowrap;text-align:center;max-width:340px;
-  pointer-events:none; /* status bar shouldn't block clicks */
+  white-space:nowrap;text-align:center;max-width:380px;
+  pointer-events:auto;
 }
 
 /* Player info bottom-left */
@@ -341,30 +346,26 @@ img{display:block;}
 /* IVORY — cream/beige like reference */
 .t-ivory{
   background:#f0e8d0;
-  border:2px solid #b8a870;
-  box-shadow:
-    0 6px 16px rgba(0,0,0,.55),
-    2px 2px 0 rgba(0,0,0,.12),
-    inset 0 1px 0 rgba(255,255,255,.9),
-    inset 0 -1px 0 rgba(0,0,0,.08);
+  border:2px solid #1a1a1a;
+  box-shadow:0 4px 12px rgba(0,0,0,.5), 2px 2px 0 rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.8);
 }
-.t-ivory .div-h,.t-ivory .div-v{background:#8a7050;}
+.t-ivory .div-h,.t-ivory .div-v{background:#555;}
 
 /* EBONY — dark like the gold tiles in reference */
 .t-ebony{
   background:linear-gradient(160deg,#2a2a2a,#141414);
-  border:2px solid #3a3a3a;
-  box-shadow:0 6px 16px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.08);
+  border:2px solid #1a1a1a;
+  box-shadow:0 4px 12px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.08);
 }
-.t-ebony .div-h,.t-ebony .div-v{background:#555;}
+.t-ebony .div-h,.t-ebony .div-v{background:#777;}
 
 /* WOOD */
 .t-wood{
   background:linear-gradient(160deg,#d09050,#a07030);
-  border:2px solid #6a4018;
-  box-shadow:0 6px 16px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,200,80,.3);
+  border:2px solid #1a1a1a;
+  box-shadow:0 4px 12px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,200,80,.3);
 }
-.t-wood .div-h,.t-wood .div-v{background:rgba(0,0,0,.4);}
+.t-wood .div-h,.t-wood .div-v{background:rgba(0,0,0,.5);}
 
 /* ── PIP COLORS ── */
 /* Classic: deep black/brown dots like reference */
@@ -1035,6 +1036,64 @@ function newRound(){
   if(!currentRoomId){startAiGame();}
 }
 
+
+/* ══════════════════════════════════
+   SNAKE BOARD LAYOUT
+   Tiles flow right, then wrap down,
+   then flow left, then wrap down, etc.
+   (like the reference image)
+══════════════════════════════════ */
+function renderSnakeBoard(board){
+  // Measure available width to know how many tiles per row
+  const wrap=document.getElementById('board-wrap');
+  const availW=wrap.offsetWidth||300;
+  // Tile width: .h = 92+2(border)+2(gap)≈96, .d = 48+2+2≈52
+  const TILE_H_W=94, TILE_D_W=50; // approximate widths
+  
+  // Calculate tiles per row based on available width
+  const tilesPerRow=Math.max(3, Math.floor(availW/TILE_H_W));
+  
+  let row=document.createElement('div'); row.className='board-row';
+  let rowTiles=0, direction=1; // 1=right, -1=left
+  let rowCount=0;
+  
+  chain.forEach(({tile,flip,dbl},i)=>{
+    const[a,b]=flip?[tile[1],tile[0]]:[tile[0],tile[1]];
+    const sz=dbl?'d board-t':'h board-t';
+    const el=makeTile(a,b,sz,null);
+    el.style.animationDelay=(i*.02)+'s';
+    
+    // Effective width of this tile
+    const tw=dbl?TILE_D_W:TILE_H_W;
+    
+    // Check if we need to wrap
+    if(rowTiles>0 && rowTiles>=tilesPerRow){
+      // Finish current row
+      if(direction===-1) row.style.flexDirection='row-reverse';
+      board.appendChild(row);
+      
+      // Corner piece — the last tile of the row becomes a vertical connector
+      // Add a spacer row to create the snake turn
+      const spacer=document.createElement('div');
+      spacer.style.cssText='height:2px;';
+      board.appendChild(spacer);
+      
+      // New row
+      row=document.createElement('div'); row.className='board-row';
+      direction*=-1; rowTiles=0; rowCount++;
+    }
+    
+    row.appendChild(el);
+    rowTiles++;
+  });
+  
+  // Last row
+  if(rowTiles>0){
+    if(direction===-1) row.style.flexDirection='row-reverse';
+    board.appendChild(row);
+  }
+}
+
 /* ══════════════════════════════════
    RENDER
 ══════════════════════════════════ */
@@ -1076,18 +1135,12 @@ function render(){
   if(ring)ring.style.display=playerTurn&&!gameOver?'block':'none';
   // Boneyard
   
-  // Board
+  // Board — snake layout
   const board=document.getElementById('board');board.innerHTML='';
   if(!chain.length){
     const ph=document.createElement('div');ph.className='board-ph';ph.textContent='— Jogue a primeira pedra —';board.appendChild(ph);
   }else{
-    chain.forEach(({tile,flip,dbl},i)=>{
-      const[a,b]=flip?[tile[1],tile[0]]:[tile[0],tile[1]];
-      const sz=dbl?'d board-t':'h board-t';
-      const el=makeTile(a,b,sz,null);
-      el.style.animationDelay=(i*.025)+'s';
-      board.appendChild(el);
-    });
+    renderSnakeBoard(board);
   }
   // Player hand
   const ph=document.getElementById('player-hand');ph.innerHTML='';
