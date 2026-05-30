@@ -230,6 +230,37 @@ body{font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at cente
 .btn-again{background:linear-gradient(135deg,#c07010,#e8b030);color:#1a0800;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:900;border:none;border-radius:30px;padding:12px 36px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .2s;box-shadow:0 4px 20px rgba(232,176,48,.35);}
 .btn-again:hover{transform:scale(1.06);}
 
+/* ── RANKING ── */
+.rank-card{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 16px;transition:border-color .2s;}
+.rank-card:hover{border-color:rgba(232,184,48,.3);}
+.rank-pos{font-family:"Playfair Display",serif;font-size:1.3rem;font-weight:900;color:rgba(255,255,255,.2);width:32px;text-align:center;flex-shrink:0;}
+.rank-pos.gold{color:#e8b830;}
+.rank-pos.silver{color:#c0c0c0;}
+.rank-pos.bronze{color:#cd7f32;}
+.rank-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#5080d0,#3060a0);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;overflow:hidden;}
+.rank-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.rank-info{flex:1;}
+.rank-name{font-size:.9rem;font-weight:800;color:#fff;}
+.rank-sub{font-size:.68rem;color:rgba(255,255,255,.45);margin-top:1px;}
+.rank-stats{display:flex;gap:12px;text-align:center;}
+.rank-stat .val{font-family:"Playfair Display",serif;font-size:1rem;font-weight:700;}
+.rank-stat .lbl{font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:.5px;text-transform:uppercase;}
+.rank-stat.wins .val{color:#30b060;}
+.rank-stat.losses .val{color:#e87878;}
+.rank-stat.pct .val{color:#e8b830;}
+
+/* ── ADMIN ── */
+.admin-tab{font-family:"Nunito",sans-serif;font-size:.8rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;border:1.5px solid rgba(255,255,255,.15);border-radius:20px;padding:8px 18px;cursor:pointer;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);transition:all .2s;flex:1;}
+.admin-tab.active{background:rgba(232,120,120,.15);border-color:rgba(232,120,120,.4);color:#e87878;}
+.admin-user-card{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 16px;margin-bottom:8px;}
+.admin-user-card.banned{border-color:rgba(232,120,120,.3);opacity:.6;}
+.admin-btn{font-family:"Nunito",sans-serif;font-size:.7rem;font-weight:800;border:none;border-radius:14px;padding:5px 12px;cursor:pointer;transition:all .18s;}
+.admin-btn.ban{background:rgba(232,120,120,.2);color:#e87878;border:1px solid rgba(232,120,120,.3);}
+.admin-btn.ban:hover{background:rgba(232,120,120,.4);}
+.admin-btn.unban{background:rgba(48,176,96,.2);color:#30b060;border:1px solid rgba(48,176,96,.3);}
+.admin-btn.del{background:rgba(232,120,120,.15);color:#e87878;border:1px solid rgba(232,120,120,.25);}
+.admin-btn.del:hover{background:rgba(232,120,120,.35);}
+
 .room-type-card{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;cursor:pointer;transition:all .2s;}
 .room-type-card:hover{background:rgba(232,184,48,.1);border-color:rgba(232,184,48,.4);transform:translateX(4px);}
 .room-type-icon{font-size:1.6rem;flex-shrink:0;width:44px;text-align:center;}
@@ -304,9 +335,19 @@ body{font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at cente
       <div class="user-pill">
         <div class="user-avatar" id="lobby-avatar">😎</div>
         <span class="user-name" id="lobby-name">Jogador</span>
-        <button class="btn-logout" onclick="logout()">Sair</button>
+        <button class="btn-logout" id="btn-admin" onclick="showScreen('admin');loadAdmin()" style="display:none;color:#e87878;">⚙️ Admin</button>
+      <button class="btn-logout" onclick="logout()">Sair</button>
       </div>
     </div>
+    <!-- Top 10 Ranking compacto -->
+    <div id="lobby-ranking" style="width:100%;max-width:700px;margin-bottom:16px;background:rgba(0,0,0,.25);border:1px solid rgba(232,184,48,.12);border-radius:16px;padding:14px 16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:.75rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(232,184,48,.7);">🏆 Top 10</div>
+        <button onclick="showScreen('ranking')" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:.72rem;cursor:pointer;font-family:'Nunito',sans-serif;">Ver todos →</button>
+      </div>
+      <div id="lobby-ranking-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
     <div class="lobby-actions">
       <h2>🎮 SALAS ABERTAS</h2>
       <button class="btn-create" onclick="showCreateModal()">+ Criar Sala</button>
@@ -314,6 +355,33 @@ body{font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at cente
     <div class="rooms-list" id="rooms-list">
       <div class="rooms-empty"><div class="big">🁫</div>Nenhuma sala aberta.<br>Crie uma e convide seus amigos!</div>
     </div>
+  </div>
+</div>
+
+<!-- RANKING SCREEN -->
+<div class="screen hidden" id="screen-ranking">
+  <div style="width:100%;max-width:700px;display:flex;flex-direction:column;align-items:center;padding:16px;">
+    <div class="lobby-header">
+      <div class="lobby-title">🏆 Ranking</div>
+      <button class="btn-logout" onclick="showScreen('lobby')" style="font-size:.9rem;color:rgba(255,255,255,.6);">← Voltar</button>
+    </div>
+    <div id="ranking-list" style="width:100%;display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+</div>
+
+<!-- ADMIN SCREEN -->
+<div class="screen hidden" id="screen-admin">
+  <div style="width:100%;max-width:760px;display:flex;flex-direction:column;align-items:center;padding:16px;overflow-y:auto;max-height:100vh;">
+    <div class="lobby-header">
+      <div class="lobby-title" style="color:#e87878;">⚙️ Admin</div>
+      <button class="btn-logout" onclick="showScreen('lobby')" style="font-size:.9rem;color:rgba(255,255,255,.6);">← Voltar</button>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;width:100%;">
+      <button class="admin-tab active" id="tab-users" onclick="adminTab('users')">👥 Usuários</button>
+      <button class="admin-tab" id="tab-rooms" onclick="adminTab('rooms')">🎮 Salas</button>
+    </div>
+    <div id="admin-content" style="width:100%;"></div>
   </div>
 </div>
 
@@ -1066,6 +1134,168 @@ function render(){
   if(drawBtn) drawBtn.disabled = nd || !boneyard.length;
   if(passBtn) passBtn.disabled = nd;
 }
+
+/* ════════════════════════════════════════
+   RANKING & STATS
+════════════════════════════════════════ */
+let isAdmin = false;
+
+async function initUserStats(){
+  if (!currentUser) return;
+  const meta  = currentUser.user_metadata || {};
+  const name  = meta.full_name || meta.name || 'Jogador';
+  const photo = meta.avatar_url || meta.picture || '';
+  // Upsert stats (insert if not exists)
+  await sb.from('player_stats').upsert({
+    user_id: currentUser.id,
+    name, photo,
+    email: currentUser.email
+  }, { onConflict: 'user_id', ignoreDuplicates: true });
+  // Check if admin
+  const { data } = await sb.from('admins').select('user_id').eq('user_id', currentUser.id).single();
+  isAdmin = !!data;
+  const adminBtn = document.getElementById('btn-admin');
+  if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+}
+
+async function saveMatchResult(won){
+  if (!currentUser) return;
+  const { data } = await sb.from('player_stats').select('wins,losses').eq('user_id', currentUser.id).single();
+  if (!data) return;
+  await sb.from('player_stats').update({
+    wins:   won ? data.wins + 1   : data.wins,
+    losses: won ? data.losses     : data.losses + 1,
+  }).eq('user_id', currentUser.id);
+}
+
+async function loadRanking(limit=10){
+  const { data } = await sb.from('player_stats')
+    .select('name,photo,wins,losses')
+    .eq('banned', false)
+    .order('wins', { ascending: false })
+    .limit(limit);
+  return data || [];
+}
+
+async function renderLobbyRanking(){
+  const list = document.getElementById('lobby-ranking-list');
+  if (!list) return;
+  const data = await loadRanking(10);
+  if (!data.length){ list.innerHTML = '<div style="text-align:center;font-size:.75rem;color:rgba(255,255,255,.25);padding:8px;">Nenhuma partida registrada ainda.</div>'; return; }
+  list.innerHTML = '';
+  data.forEach((p, i) => {
+    const total = p.wins + p.losses;
+    const pct   = total > 0 ? Math.round((p.wins / total) * 100) : 0;
+    const pos   = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`;
+    const row   = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 4px;';
+    row.innerHTML = `
+      <div style="width:26px;text-align:center;font-size:${pos?'1rem':'.8rem'};color:${pos==='gold'?'#e8b830':pos==='silver'?'#c0c0c0':pos==='bronze'?'#cd7f32':'rgba(255,255,255,.3)'};">${medal}</div>
+      <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#5080d0,#3060a0);overflow:hidden;flex-shrink:0;">
+        ${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;">` : '😎'}
+      </div>
+      <div style="flex:1;font-size:.8rem;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(p.name)}</div>
+      <div style="display:flex;gap:10px;font-size:.72rem;text-align:center;">
+        <div><div style="color:#30b060;font-weight:900;">${p.wins}</div><div style="color:rgba(255,255,255,.3);font-size:.6rem;">V</div></div>
+        <div><div style="color:#e87878;font-weight:900;">${p.losses}</div><div style="color:rgba(255,255,255,.3);font-size:.6rem;">D</div></div>
+        <div><div style="color:#e8b830;font-weight:900;">${pct}%</div><div style="color:rgba(255,255,255,.3);font-size:.6rem;">%V</div></div>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+/* ════════════════════════════════════════
+   ADMIN
+════════════════════════════════════════ */
+let currentAdminTab = 'users';
+
+function adminTab(tab){
+  currentAdminTab = tab;
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  loadAdmin();
+}
+
+async function loadAdmin(){
+  if (!isAdmin) return;
+  const el = document.getElementById('admin-content');
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,.4);">Carregando…</div>';
+
+  if (currentAdminTab === 'users') {
+    const { data } = await sb.from('player_stats').select('*').order('wins', { ascending: false });
+    if (!data?.length){ el.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.3);padding:20px;">Nenhum usuário.</div>'; return; }
+    el.innerHTML = '';
+    data.forEach(u => {
+      const total = u.wins + u.losses;
+      const pct   = total > 0 ? Math.round((u.wins/total)*100) : 0;
+      const card  = document.createElement('div');
+      card.className = 'admin-user-card' + (u.banned ? ' banned' : '');
+      card.innerHTML = `
+        <div class="rank-avatar">${u.photo?`<img src="${escHtml(u.photo)}" alt="">`:'😎'}</div>
+        <div style="flex:1;">
+          <div style="font-size:.85rem;font-weight:800;color:#fff;">${escHtml(u.name)}${u.banned?' 🚫':''}</div>
+          <div style="font-size:.65rem;color:rgba(255,255,255,.35);">${escHtml(u.email||'')} · V:${u.wins} D:${u.losses} ${pct}%</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="admin-btn ${u.banned?'unban':'ban'}" onclick="toggleBan('${u.user_id}',${u.banned})">${u.banned?'Desbanir':'Banir'}</button>
+        </div>`;
+      el.appendChild(card);
+    });
+  } else {
+    const { data } = await sb.from('rooms').select('*').order('created_at', { ascending: false });
+    if (!data?.length){ el.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.3);padding:20px;">Nenhuma sala aberta.</div>'; return; }
+    el.innerHTML = '';
+    data.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'admin-user-card';
+      card.innerHTML = `
+        <div style="font-size:1.2rem;">🎮</div>
+        <div style="flex:1;">
+          <div style="font-size:.85rem;font-weight:800;color:#fff;">${escHtml(r.owner_name)}'s Room</div>
+          <div style="font-size:.65rem;color:rgba(255,255,255,.35);">${r.max_players} jogadores · ${r.status} · ${r.mode}</div>
+        </div>
+        <button class="admin-btn del" onclick="adminDeleteRoom('${r.id}')">Deletar</button>`;
+      el.appendChild(card);
+    });
+  }
+}
+
+async function toggleBan(userId, banned){
+  await sb.from('player_stats').update({ banned: !banned }).eq('user_id', userId);
+  loadAdmin();
+}
+
+async function adminDeleteRoom(roomId){
+  if (!confirm('Deletar esta sala?')) return;
+  await sb.from('rooms').delete().eq('id', roomId);
+  loadAdmin();
+}
+
+/* ════════════════════════════════════════
+   HOOK INTO AUTH + GAME END
+════════════════════════════════════════ */
+// Override updateLobbyUser to also init stats and ranking
+const _origUpdateLobbyUser = updateLobbyUser;
+updateLobbyUser = function(){
+  _origUpdateLobbyUser();
+  initUserStats();
+  renderLobbyRanking();
+};
+
+// Override endRound to save results
+const _origEndRound = endRound;
+endRound = function(w){
+  _origEndRound(w);
+  if (w === 'player') saveMatchResult(true);
+  else if (w === 'ai')    saveMatchResult(false);
+  else {
+    const pP = sumHand(playerHand), aP = sumHand(aiHand);
+    if (pP < aP) saveMatchResult(true);
+    else if (aP < pP) saveMatchResult(false);
+  }
+};
+
 </script>
 </body>
 </html>
