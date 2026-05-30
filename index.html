@@ -411,7 +411,14 @@ body{font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at cente
 const SUPABASE_URL  = 'https://tjkokegxjdwucbctwlvb.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqa29rZWd4amR3dWNiY3R3bHZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMzY4NzMsImV4cCI6MjA5NTYxMjg3M30.fu8_1kpVwvvi16yGoRaEFZgfpO2uYluNfeF4a6ILrVg';
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: {
+    flowType: 'pkce',
+    detectSessionInUrl: true,
+    persistSession: true,
+    storage: window.localStorage
+  }
+});
 
 /* ═══════════════════════════════════════════
    STATE
@@ -455,26 +462,33 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-// Init — handle OAuth callback + check existing session
+// Init
 (async () => {
   showScreen('loading');
 
-  // Handle PKCE OAuth redirect (code in URL)
+  // Handle PKCE code from URL
   const params = new URLSearchParams(window.location.search);
-  if (params.get('code')) {
+  const code = params.get('code');
+
+  if (code) {
     try {
-      await sb.auth.exchangeCodeForSession(window.location.href);
+      const { error } = await sb.auth.exchangeCodeForSession(window.location.href);
+      if (error) console.error('exchangeCode error:', error);
+      // Clean URL after exchange
       window.history.replaceState({}, document.title, window.location.pathname);
-    } catch(e) { console.warn('exchangeCodeForSession:', e); }
+    } catch(e) {
+      console.error('exchangeCode exception:', e);
+    }
   }
 
-  // Handle implicit flow (token in hash)
-  const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
-  if (hashParams.get('access_token')) {
+  // Handle implicit token in hash
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    // Supabase auto-detects this
+    await new Promise(r => setTimeout(r, 800));
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-  // Get session (works for both new and returning users)
   const { data: { session } } = await sb.auth.getSession();
   currentUser = session?.user || null;
 
@@ -500,8 +514,8 @@ async function loginGoogle(){
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + window.location.pathname,
-      queryParams: { access_type: 'offline', prompt: 'consent' }
+      redirectTo: 'https://dominobrasil.pages.dev',
+      scopes: 'email profile'
     }
   });
   if (error) alert('Erro ao entrar: ' + error.message);
