@@ -230,6 +230,13 @@ body{font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at cente
 .btn-again{background:linear-gradient(135deg,#c07010,#e8b030);color:#1a0800;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:900;border:none;border-radius:30px;padding:12px 36px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .2s;box-shadow:0 4px 20px rgba(232,176,48,.35);}
 .btn-again:hover{transform:scale(1.06);}
 
+.room-type-card{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;cursor:pointer;transition:all .2s;}
+.room-type-card:hover{background:rgba(232,184,48,.1);border-color:rgba(232,184,48,.4);transform:translateX(4px);}
+.room-type-icon{font-size:1.6rem;flex-shrink:0;width:44px;text-align:center;}
+.room-type-info{flex:1;}
+.room-type-title{font-size:.95rem;font-weight:800;color:#fff;}
+.room-type-sub{font-size:.72rem;color:rgba(255,255,255,.45);margin-top:2px;}
+.room-type-arrow{font-size:1.5rem;color:rgba(232,184,48,.5);font-weight:900;}
 @media(max-width:600px){
   .tile.ph{width:54px;height:104px;}
   .tile.ph .pip-wrap{width:34px;height:34px;}
@@ -302,7 +309,7 @@ body{font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at cente
     </div>
     <div class="lobby-actions">
       <h2>🎮 SALAS ABERTAS</h2>
-      <button class="btn-create" onclick="createRoom()">+ Criar Sala</button>
+      <button class="btn-create" onclick="showCreateModal()">+ Criar Sala</button>
     </div>
     <div class="rooms-list" id="rooms-list">
       <div class="rooms-empty"><div class="big">🁫</div>Nenhuma sala aberta.<br>Crie uma e convide seus amigos!</div>
@@ -393,6 +400,45 @@ body{font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at cente
   </div>
 
   <div id="bottom-bar"><div id="player-hand"></div></div>
+</div>
+
+<!-- MODAL CRIAR SALA -->
+<div id="modal-create" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(8px);align-items:center;justify-content:center;z-index:200;">
+  <div style="background:linear-gradient(160deg,#2a1a3a,#1a0e28);border:1.5px solid rgba(232,184,48,.35);border-radius:24px;padding:36px 32px;max-width:420px;width:92%;box-shadow:0 20px 80px rgba(0,0,0,.9);">
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;color:#e8b830;text-align:center;margin-bottom:6px;">Criar Nova Sala</h2>
+    <p style="text-align:center;font-size:.85rem;color:rgba(255,255,255,.45);margin-bottom:24px;">Escolha o tipo de partida</p>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <div class="room-type-card" onclick="createRoom(2,'real')">
+        <div class="room-type-icon">👥</div>
+        <div class="room-type-info">
+          <div class="room-type-title">Sala 2 Jogadores</div>
+          <div class="room-type-sub">1 vs 1 · Dois jogadores reais</div>
+        </div>
+        <div class="room-type-arrow">›</div>
+      </div>
+
+      <div class="room-type-card" onclick="createRoom(4,'real')">
+        <div class="room-type-icon">👥👥</div>
+        <div class="room-type-info">
+          <div class="room-type-title">Sala 4 Jogadores</div>
+          <div class="room-type-sub">Quatro jogadores reais</div>
+        </div>
+        <div class="room-type-arrow">›</div>
+      </div>
+
+      <div class="room-type-card" onclick="createRoom(2,'ai')">
+        <div class="room-type-icon">🤖</div>
+        <div class="room-type-info">
+          <div class="room-type-title">Sala com IA</div>
+          <div class="room-type-sub">1 humano vs Computador · Partida rápida</div>
+        </div>
+        <div class="room-type-arrow">›</div>
+      </div>
+
+    </div>
+    <button onclick="hideCreateModal()" style="margin-top:20px;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);border-radius:20px;padding:10px;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;">Cancelar</button>
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -582,24 +628,40 @@ function escHtml(t){ return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 /* ═══════════════════════════════════════════
    CRIAR SALA
 ═══════════════════════════════════════════ */
-async function createRoom(){
+function showCreateModal(){
+  const m = document.getElementById('modal-create');
+  m.style.display = 'flex';
+}
+
+function hideCreateModal(){
+  const m = document.getElementById('modal-create');
+  m.style.display = 'none';
+}
+
+async function createRoom(maxPlayers, mode){
   if (!currentUser) return;
+  hideCreateModal();
   const meta  = currentUser.user_metadata || {};
   const name  = meta.full_name || meta.name || 'Jogador';
   const photo = meta.avatar_url || meta.picture || '';
 
+  // Sala com IA: inicia direto sem sala de espera
+  if (mode === 'ai') {
+    startAiGame();
+    return;
+  }
+
   const { data: room, error } = await sb.from('rooms').insert({
-    owner_id:   currentUser.id,
-    owner_name: name,
+    owner_id:    currentUser.id,
+    owner_name:  name,
     owner_photo: photo,
-    status:     'waiting',
-    max_players: 4,
-    mode:       'Draw Game'
+    status:      'waiting',
+    max_players: maxPlayers || 4,
+    mode:        'Draw Game'
   }).select().single();
 
   if (error) { alert('Erro ao criar sala: ' + error.message); return; }
 
-  // Entrar como primeiro jogador
   await sb.from('room_players').insert({
     room_id: room.id,
     user_id: currentUser.id,
@@ -785,6 +847,29 @@ function syncGameState(rgs){
 /* ═══════════════════════════════════════════
    SAIR DA SALA / JOGO
 ═══════════════════════════════════════════ */
+// ── JOGO VS IA (sem sala, começa imediatamente) ──
+function startAiGame(){
+  showScreen('game');
+  const all = shuffleArr(makeDominos());
+  playerHand = all.slice(0,7);
+  aiHand     = all.slice(7,14);
+  boneyard   = all.slice(14);
+  chain=[]; leftEnd=null; rightEnd=null;
+  playerTurn=true; selected=null; gameOver=false;
+  pScore=0; oppScore=0; opponents=[];
+
+  const meta  = currentUser?.user_metadata || {};
+  const name  = meta.full_name || meta.name || 'Você';
+  const photo = meta.avatar_url || meta.picture || '';
+  document.getElementById('my-name-game').textContent = name;
+  if (photo) document.getElementById('av-me').innerHTML = `<img src="${photo}" alt="">`;
+  document.getElementById('opp-center-name').textContent = '🤖 Computador';
+  document.getElementById('av-center').textContent = '🤖';
+
+  render();
+  setStatus('Sua vez! Toque uma peça para jogar.');
+}
+
 async function leaveRoom(){
   if (!currentRoomId || !currentUser) return;
   stopListening();
@@ -896,6 +981,8 @@ function endRound(w){
 }
 
 function newRound(){
+  // Se era partida vs IA, reinicia direto
+  if (!currentRoomId) { startAiGame(); return; }
   document.getElementById('modal').classList.remove('show');
   const all=shuffleArr(makeDominos());
   playerHand=all.slice(0,7);aiHand=all.slice(7,14);boneyard=all.slice(14);
